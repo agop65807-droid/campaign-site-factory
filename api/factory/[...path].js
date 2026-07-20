@@ -976,7 +976,7 @@ async function provisionStep(tenant, jobId, adminUsername, adminPassword) {
         const adminPass = adminPassword || generatePassword(16);
         const adminUser = adminUsername || 'admin';
         const setupSQL = `DO $$ DECLARE v_salt TEXT := gen_salt('bf', 10); v_hash TEXT := crypt('${adminPass}', v_salt); BEGIN INSERT INTO main_admins (username, password_hash, password_salt, is_active, must_change_password) VALUES ('${adminUser}', v_hash, v_salt, true, true) ON CONFLICT (username) DO UPDATE SET password_hash = v_hash, password_salt = v_salt; END $$;`;
-        await supabase.rpc('exec_sql', { sql: setupSQL }).catch(() => {});
+        try { await supabase.rpc('exec_sql', { sql: setupSQL }); } catch(e) { console.error('Admin setup error:', e.message); }
         await supabase.from('tenants').update({
           subdomain: `${tenant.slug}.campaigns.vercel.app`,
           updated_at: new Date().toISOString()

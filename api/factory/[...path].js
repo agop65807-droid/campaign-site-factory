@@ -1015,7 +1015,7 @@ async function provisionStep(tenant, jobId, adminUsername, adminPassword) {
       const vercelRes = await fetch('https://api.vercel.com/v10/projects', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${VERCEL_TOKEN}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: tenant.slug, framework: null })
+        body: JSON.stringify({ name: tenant.slug, framework: null, buildCommand: '', outputDirectory: '.', installCommand: 'echo skip' })
       });
       if (!vercelRes.ok) throw new Error(`Vercel project creation failed: ${vercelRes.status} ${await vercelRes.text()}`);
       const proj = await vercelRes.json();
@@ -1196,6 +1196,63 @@ async function handleConfig(req, res) {
     console.error('Config error:', error.message);
     res.writeHead(500, corsHeaders);
     res.end(JSON.stringify({ error: 'Internal server error' }));
+  }
+}
+
+// ============================================================================
+// HANDLER: /api/config (Tenant site config - uses tenantSupabase)
+// ============================================================================
+
+async function handleTenantConfig(req, res) {
+  if (req.method === 'OPTIONS') { res.writeHead(204, corsHeaders); res.end(); return; }
+  if (req.method !== 'GET') { res.writeHead(405, corsHeaders); res.end(JSON.stringify({ error: 'Method not allowed' })); return; }
+
+  try {
+    const { data: settings, error } = await tenantSupabase
+      .from('site_settings')
+      .select('*')
+      .limit(1)
+      .single();
+
+    if (error || !settings) {
+      res.writeHead(200, corsHeaders);
+      res.end(JSON.stringify({
+        orgName: 'حملة',
+        hashtag: '',
+        logoUrl: '/logo-dark.png',
+        primaryColor: '#15803d',
+        secondaryColor: '#d97706',
+        themeMode: 'dark',
+        enabledSharePlatforms: ['x', 'whatsapp', 'facebook', 'telegram']
+      }));
+      return;
+    }
+
+    res.writeHead(200, corsHeaders);
+    res.end(JSON.stringify({
+      orgName: settings.org_name,
+      hashtag: settings.hashtag,
+      logoUrl: settings.logo_url,
+      faviconUrl: settings.favicon_url,
+      primaryColor: settings.primary_color,
+      secondaryColor: settings.secondary_color,
+      themeMode: settings.theme_mode,
+      enabledSharePlatforms: settings.enabled_share_platforms,
+      metaTitle: settings.meta_title,
+      metaDescription: settings.meta_description
+    }));
+  } catch (error) {
+    console.error('Tenant config error:', error.message);
+    res.writeHead(200, corsHeaders);
+    res.end(JSON.stringify({
+      orgName: 'حملة',
+      hashtag: '',
+      logoUrl: '/logo-dark.png',
+      primaryColor: '#15803d',
+      secondaryColor: '#d97706',
+      themeMode: 'dark',
+      enabledSharePlatforms: ['x', 'whatsapp', 'facebook', 'telegram']
+    }));
   }
 }
 
@@ -2706,6 +2763,9 @@ module.exports = async (req, res) => {
 
       if (tenantPath === '/auth' && req.method === 'POST') {
         return await handleTenantAuth(req, res);
+      }
+      if (tenantPath === '/config' && req.method === 'GET') {
+        return await handleTenantConfig(req, res);
       }
       if (tenantPath === '/logout' && req.method === 'POST') {
         return await handleTenantLogout(req, res);

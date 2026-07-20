@@ -1667,6 +1667,16 @@ module.exports = async (req, res) => {
   const path = pathname.replace(/\/$/, '').replace(/\/\/+/g, '/');
   console.log('[API] Routed to path:', path);
 
+  // Pass factory routes to factory API handler
+  if (path.startsWith('/api/factory')) {
+    const factoryHandler = require('./factory/[...path].js');
+    if (typeof factoryHandler === 'function') {
+      return factoryHandler(req, res);
+    } else if (factoryHandler.default) {
+      return factoryHandler.default(req, res);
+    }
+  }
+
   switch (path) {
     case '/api/auth': return handleAuth(req, res);
     case '/api/logout': return handleLogout(req, res);

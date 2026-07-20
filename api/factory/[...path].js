@@ -603,26 +603,20 @@ async function handleProvision(req, res) {
 
     if (jobError) throw jobError;
 
-    // Start provisioning synchronously (wait for completion)
-    const provisionResult = await provisionTenant(tenant, job.id, adminUsername, adminPassword).catch(err => {
-      console.error('Provisioning error:', err);
-      return { success: false, error: err.message };
-    });
+    // Execute ONE step synchronously (called repeatedly by frontend)
+    const result = await provisionStep(tenant, job.id, adminUsername, adminPassword);
 
     await logFactoryActivity({
       superAdminId: admin.id,
       tenantId: tenantId,
-      actionType: 'start_provisioning',
-      details: { jobId: job.id, orgName: tenant.org_name },
+      actionType: 'provision_step',
+      details: { jobId: job.id, step: result.step, status: result.status },
       ip: getIpAddress(req),
       userAgent: getUserAgent(req)
     });
 
-    // Re-fetch job status (may have been updated by provisionTenant)
-    const { data: updatedJob } = await supabase.from('provisioning_jobs').select('*').eq('id', job.id).single();
-
     res.writeHead(200, corsHeaders);
-    res.end(JSON.stringify({ success: true, job: updatedJob || job }));
+    res.end(JSON.stringify(result));
   } catch (error) {
     console.error('Provision error:', error.message);
     res.writeHead(500, corsHeaders);
@@ -630,7 +624,72 @@ async function handleProvision(req, res) {
   }
 }
 
-async function provisionTenant(tenant, jobId, adminUsername, adminPassword) {
+async function handleProvisionStep(req, res) {
+  if (req.method === 'OPTIONS') { res.writeHead(204, corsHeaders); res.end(); return; }
+  if (req.method !== 'POST') { res.writeHead(405, corsHeaders); res.end(JSON.stringify({ error: 'Method not allowed' })); return; }
+
+  const admin = await validateSuperAdmin(req);
+  if (!admin) {
+    res.writeHead(401, corsHeaders);
+    res.end(JSON.stringify({ error: 'Unauthorized' }));
+    return;
+  }
+
+  try {
+    const body = await readBody(req);
+    const data = JSON.parse(body || '{}');
+    const { jobId, adminUsername, adminPassword } = data;
+
+    if (!jobId) {
+      res.writeHead(400, corsHeaders);
+      res.end(JSON.stringify({ error: 'jobId is required' }));
+      return;
+    }
+
+    const { data: job, error: jobError } = await supabase
+      .from('provisioning_jobs')
+      .select('*')
+      .eq('id', jobId)
+      .single();
+
+    if (jobError || !job) {
+      res.writeHead(404, corsHeaders);
+      res.end(JSON.stringify({ error: 'Job not found' }));
+      return;
+    }
+
+    if (job.status !== 'running') {
+      res.writeHead(200, corsHeaders);
+      res.end(JSON.stringify({ success: true, job, done: true }));
+      return;
+    }
+
+    const { data: tenant } = await supabase
+      .from('tenants')
+      .select('*')
+      .eq('id', job.tenant_id)
+      .single();
+
+    if (!tenant) {
+      res.writeHead(404, corsHeaders);
+      res.end(JSON.stringify({ error: 'Tenant not found' }));
+      return;
+    }
+
+    const result = await provisionStep(tenant, job.id, adminUsername, adminPassword);
+
+    res.writeHead(200, corsHeaders);
+    res.end(JSON.stringify(result));
+  } catch (error) {
+    console.error('Provision step error:', error.message);
+    res.writeHead(500, corsHeaders);
+    res.end(JSON.stringify({ error: error.message || 'Internal server error' }));
+  }
+}
+
+const PROVISION_STEPS = ['init', 'create_supabase', 'run_migration', 'create_vercel', 'set_env_vars', 'deploy', 'health_check', 'completed'];
+
+async function provisionStep(tenant, jobId, adminUsername, adminPassword) {
   const updateJob = async (step, progress, status = 'running', errorLog = null) => {
     const update = { step, progress, updated_at: new Date().toISOString() };
     if (status !== 'running') { update.status = status; update.completed_at = new Date().toISOString(); }
@@ -638,203 +697,192 @@ async function provisionTenant(tenant, jobId, adminUsername, adminPassword) {
     await supabase.from('provisioning_jobs').update(update).eq('id', jobId);
   };
 
+  const { data: job } = await supabase.from('provisioning_jobs').select('*').eq('id', jobId).single();
+  const currentStep = job.step;
+  const currentIndex = PROVISION_STEPS.indexOf(currentStep);
+
+  if (currentStep === 'completed' || currentStep === 'failed') {
+    return { success: true, job, done: true };
+  }
+
   const VERCEL_TOKEN = process.env.VERCEL_TOKEN;
   const VERCEL_TEAM_ID = process.env.VERCEL_TEAM_ID;
   const SUPABASE_ACCESS_TOKEN = process.env.SUPABASE_ACCESS_TOKEN;
   const SUPABASE_ORG_ID = process.env.SUPABASE_ORG_ID;
   const FACTORY_REPO = 'agop65807-droid/campaign-site-factory';
 
-  let createdVercelProject = null;
-  let createdSupabaseProject = null;
-
   try {
-    // Step 1: Create Supabase project
-    await updateJob('create_supabase', 10);
-    if (SUPABASE_ACCESS_TOKEN && SUPABASE_ORG_ID) {
-      const sbRes = await fetch('https://api.supabase.com/v1/projects', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${SUPABASE_ACCESS_TOKEN}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: tenant.slug,
-          organization_id: SUPABASE_ORG_ID,
-          region: 'us-east-1',
-          plan: 'free'
-        })
-      });
-      if (!sbRes.ok) throw new Error(`Supabase project creation failed: ${sbRes.status} ${await sbRes.text()}`);
-      createdSupabaseProject = await sbRes.json();
-      await supabase.from('tenants').update({
-        supabase_project_ref: createdSupabaseProject.id,
-        supabase_project_url: `https://${createdSupabaseProject.id}.supabase.co`,
-        updated_at: new Date().toISOString()
-      }).eq('id', tenant.id);
-    } else {
-      // Use factory's Supabase as fallback
-      const factoryUrl = process.env.FACTORY_SUPABASE_URL;
-      const factoryKey = process.env.FACTORY_SUPABASE_KEY;
-      await supabase.from('tenants').update({
-        supabase_project_ref: 'factory-shared',
-        supabase_project_url: factoryUrl,
-        updated_at: new Date().toISOString()
-      }).eq('id', tenant.id);
-      await updateJob('create_supabase', 15, 'running', 'Using factory shared database (no Management API token)');
+    if (currentStep === 'init') {
+      await updateJob('create_supabase', 10);
+      return { success: true, step: 'create_supabase', progress: 10, done: false };
     }
 
-    // Step 2: Wait for Supabase project to be ready + run migration
-    await updateJob('run_migration', 25);
-    if (createdSupabaseProject) {
-      let ready = false;
-      for (let i = 0; i < 30 && !ready; i++) {
-        await new Promise(r => setTimeout(r, 5000));
-        const statusRes = await fetch(`https://api.supabase.com/v1/projects/${createdSupabaseProject.id}`, {
-          headers: { 'Authorization': `Bearer ${SUPABASE_ACCESS_TOKEN}` }
+    if (currentStep === 'create_supabase') {
+      if (SUPABASE_ACCESS_TOKEN && SUPABASE_ACCESS_TOKEN !== 'your-supabase-management-api-token' && SUPABASE_ORG_ID) {
+        const sbRes = await fetch('https://api.supabase.com/v1/projects', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${SUPABASE_ACCESS_TOKEN}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: tenant.slug, organization_id: SUPABASE_ORG_ID, region: 'us-east-1', plan: 'free' })
         });
-        const projData = await statusRes.json();
-        if (projData.status === 'ACTIVE_HEALTHY') ready = true;
+        if (!sbRes.ok) throw new Error(`Supabase project creation failed: ${sbRes.status} ${await sbRes.text()}`);
+        const proj = await sbRes.json();
+        await supabase.from('tenants').update({
+          supabase_project_ref: proj.id,
+          supabase_project_url: `https://${proj.id}.supabase.co`,
+          updated_at: new Date().toISOString()
+        }).eq('id', tenant.id);
+      } else {
+        await supabase.from('tenants').update({
+          supabase_project_ref: 'factory-shared',
+          supabase_project_url: process.env.FACTORY_SUPABASE_URL,
+          updated_at: new Date().toISOString()
+        }).eq('id', tenant.id);
       }
-      if (!ready) throw new Error('Supabase project did not become ready in time');
-
-      // Get project keys
-      const keysRes = await fetch(`https://api.supabase.com/v1/projects/${createdSupabaseProject.id}/api-keys`, {
-        headers: { 'Authorization': `Bearer ${SUPABASE_ACCESS_TOKEN}` }
-      });
-      const keys = await keysRes.json();
-      const anonKey = keys.find(k => k.name === 'anon')?.api_key || keys[0]?.api_key;
-      const serviceKey = keys.find(k => k.name === 'service_role')?.api_key;
-
-      // Run tenant migration SQL
-      const migrationSQL = require('fs').readFileSync(require('path').join(process.cwd(), 'tenant-migration.sql'), 'utf8');
-      const sqlRes = await fetch(`https://api.supabase.com/v1/projects/${createdSupabaseProject.id}/database/query`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${SUPABASE_ACCESS_TOKEN}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: migrationSQL })
-      });
-      if (!sqlRes.ok) throw new Error(`Migration failed: ${sqlRes.status} ${await sqlRes.text()}`);
-
-      // Create admin user with crypt()-compatible hash
-      const adminPass = adminPassword || generatePassword(16);
-      const adminUser = adminUsername || 'admin';
-      const setupSQL = `
-        DO $$
-        DECLARE
-          v_salt TEXT := gen_salt('bf', 10);
-          v_hash TEXT := crypt('${adminPass}', v_salt);
-        BEGIN
-          INSERT INTO main_admins (username, password_hash, password_salt, is_active, must_change_password)
-          VALUES ('${adminUser}', v_hash, v_salt, true, true)
-          ON CONFLICT (username) DO UPDATE SET password_hash = v_hash, password_salt = v_salt;
-        END $$;
-      `;
-      await fetch(`https://api.supabase.com/v1/projects/${createdSupabaseProject.id}/database/query`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${SUPABASE_ACCESS_TOKEN}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: setupSQL })
-      });
-
-      // Store credentials
-      await supabase.from('tenants').update({
-        subdomain: `${tenant.slug}.campaigns.vercel.app`,
-        updated_at: new Date().toISOString()
-      }).eq('id', tenant.id);
+      await updateJob('run_migration', 25);
+      return { success: true, step: 'run_migration', progress: 25, done: false };
     }
 
-    // Step 3: Create Vercel project
-    await updateJob('create_vercel', 50);
-    if (VERCEL_TOKEN && VERCEL_TEAM_ID) {
+    if (currentStep === 'run_migration') {
+      const { data: t } = await supabase.from('tenants').select('supabase_project_ref').eq('id', tenant.id).single();
+      if (t.supabase_project_ref === 'factory-shared') {
+        await supabase.from('tenants').update({
+          subdomain: `${tenant.slug}.campaigns.vercel.app`,
+          updated_at: new Date().toISOString()
+        }).eq('id', tenant.id);
+      } else if (t.supabase_project_ref && SUPABASE_ACCESS_TOKEN) {
+        let ready = false;
+        for (let i = 0; i < 10 && !ready; i++) {
+          await new Promise(r => setTimeout(r, 3000));
+          const statusRes = await fetch(`https://api.supabase.com/v1/projects/${t.supabase_project_ref}`, {
+            headers: { 'Authorization': `Bearer ${SUPABASE_ACCESS_TOKEN}` }
+          });
+          const projData = await statusRes.json();
+          if (projData.status === 'ACTIVE_HEALTHY') ready = true;
+        }
+        if (!ready) throw new Error('Supabase project not ready');
+
+        const migrationSQL = require('fs').readFileSync(require('path').join(process.cwd(), 'tenant-migration.sql'), 'utf8');
+        const sqlRes = await fetch(`https://api.supabase.com/v1/projects/${t.supabase_project_ref}/database/query`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${SUPABASE_ACCESS_TOKEN}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: migrationSQL })
+        });
+        if (!sqlRes.ok) throw new Error(`Migration failed: ${sqlRes.status} ${await sqlRes.text()}`);
+
+        const adminPass = adminPassword || generatePassword(16);
+        const adminUser = adminUsername || 'admin';
+        const setupSQL = `DO $$ DECLARE v_salt TEXT := gen_salt('bf', 10); v_hash TEXT := crypt('${adminPass}', v_salt); BEGIN INSERT INTO main_admins (username, password_hash, password_salt, is_active, must_change_password) VALUES ('${adminUser}', v_hash, v_salt, true, true) ON CONFLICT (username) DO UPDATE SET password_hash = v_hash, password_salt = v_salt; END $$;`;
+        await fetch(`https://api.supabase.com/v1/projects/${t.supabase_project_ref}/database/query`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${SUPABASE_ACCESS_TOKEN}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ query: setupSQL })
+        });
+        await supabase.from('tenants').update({ subdomain: `${tenant.slug}.campaigns.vercel.app`, updated_at: new Date().toISOString() }).eq('id', tenant.id);
+      }
+      await updateJob('create_vercel', 50);
+      return { success: true, step: 'create_vercel', progress: 50, done: false };
+    }
+
+    if (currentStep === 'create_vercel') {
       const vercelRes = await fetch('https://api.vercel.com/v10/projects', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${VERCEL_TOKEN}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: tenant.slug, framework: null })
       });
       if (!vercelRes.ok) throw new Error(`Vercel project creation failed: ${vercelRes.status} ${await vercelRes.text()}`);
-      createdVercelProject = await vercelRes.json();
+      const proj = await vercelRes.json();
 
-      // Link GitHub repo
-      await fetch(`https://api.vercel.com/v9/projects/${createdVercelProject.id}/link`, {
+      await fetch(`https://api.vercel.com/v9/projects/${proj.id}/link`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${VERCEL_TOKEN}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({ type: 'github', repo: FACTORY_REPO, repoId: 1306421369, productionBranch: 'master' })
       });
 
       await supabase.from('tenants').update({
-        vercel_project_id: createdVercelProject.id,
-        vercel_url: `https://${createdVercelProject.name}.vercel.app`,
+        vercel_project_id: proj.id,
+        vercel_url: `https://${proj.name}.vercel.app`,
         updated_at: new Date().toISOString()
       }).eq('id', tenant.id);
+
+      await updateJob('set_env_vars', 70);
+      return { success: true, step: 'set_env_vars', progress: 70, done: false };
     }
 
-    // Step 4: Set environment variables on Vercel
-    await updateJob('set_env_vars', 70);
-    if (createdVercelProject) {
-      let tenantSupabaseUrl, tenantAnonKey;
-      
-      if (createdSupabaseProject) {
-        // New Supabase project
-        const keysRes = await fetch(`https://api.supabase.com/v1/projects/${createdSupabaseProject.id}/api-keys`, {
-          headers: { 'Authorization': `Bearer ${SUPABASE_ACCESS_TOKEN}` }
-        });
-        const keys = await keysRes.json();
-        tenantSupabaseUrl = `https://${createdSupabaseProject.id}.supabase.co`;
-        tenantAnonKey = keys.find(k => k.name === 'anon')?.api_key || keys[0]?.api_key;
-      } else {
-        // Factory shared database
-        tenantSupabaseUrl = process.env.FACTORY_SUPABASE_URL;
-        tenantAnonKey = process.env.FACTORY_SUPABASE_KEY;
+    if (currentStep === 'set_env_vars') {
+      const { data: t } = await supabase.from('tenants').select('vercel_project_id, supabase_project_ref').eq('id', tenant.id).single();
+      if (t.vercel_project_id) {
+        let tenantSupabaseUrl, tenantAnonKey;
+        if (t.supabase_project_ref && t.supabase_project_ref !== 'factory-shared' && SUPABASE_ACCESS_TOKEN) {
+          const keysRes = await fetch(`https://api.supabase.com/v1/projects/${t.supabase_project_ref}/api-keys`, {
+            headers: { 'Authorization': `Bearer ${SUPABASE_ACCESS_TOKEN}` }
+          });
+          const keys = await keysRes.json();
+          tenantSupabaseUrl = `https://${t.supabase_project_ref}.supabase.co`;
+          tenantAnonKey = keys.find(k => k.name === 'anon')?.api_key || keys[0]?.api_key;
+        } else {
+          tenantSupabaseUrl = process.env.FACTORY_SUPABASE_URL;
+          tenantAnonKey = process.env.FACTORY_SUPABASE_KEY;
+        }
+
+        const envVars = [
+          { key: 'SUPABASE_URL', value: tenantSupabaseUrl },
+          { key: 'SUPABASE_KEY', value: tenantAnonKey },
+          { key: 'ADMIN_USER', value: adminUsername || 'admin' },
+          { key: 'ADMIN_PASS', value: adminPassword || 'changeme' }
+        ];
+
+        for (const env of envVars) {
+          await fetch(`https://api.vercel.com/v10/projects/${t.vercel_project_id}/env`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${VERCEL_TOKEN}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...env, type: 'encrypted', target: ['production', 'preview', 'development'] })
+          });
+        }
       }
+      await updateJob('deploy', 85);
+      return { success: true, step: 'deploy', progress: 85, done: false };
+    }
 
-      const envVars = [
-        { key: 'SUPABASE_URL', value: tenantSupabaseUrl },
-        { key: 'SUPABASE_KEY', value: tenantAnonKey },
-        { key: 'ADMIN_USER', value: adminUsername || 'admin' },
-        { key: 'ADMIN_PASS', value: adminPassword || 'changeme' }
-      ];
-
-      for (const env of envVars) {
-        await fetch(`https://api.vercel.com/v10/projects/${createdVercelProject.id}/env`, {
+    if (currentStep === 'deploy') {
+      const { data: t } = await supabase.from('tenants').select('vercel_project_id').eq('id', tenant.id).single();
+      if (t.vercel_project_id) {
+        const deployRes = await fetch('https://api.vercel.com/v13/deployments', {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${VERCEL_TOKEN}`, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...env, type: 'encrypted', target: ['production', 'preview', 'development'] })
+          body: JSON.stringify({
+            name: tenant.slug,
+            gitSource: { type: 'github', ref: 'master', repoId: 1306421369 },
+            target: 'production'
+          })
         });
+        if (deployRes.ok) {
+          const deploy = await deployRes.json();
+          await supabase.from('tenants').update({ vercel_url: deploy.url ? `https://${deploy.url}` : tenant.vercel_url, updated_at: new Date().toISOString() }).eq('id', tenant.id);
+        }
       }
+      await updateJob('health_check', 95);
+      return { success: true, step: 'health_check', progress: 95, done: false };
     }
 
-    // Step 5: Deploy
-    await updateJob('deploy', 85);
-    if (createdVercelProject) {
-      const deployRes = await fetch('https://api.vercel.com/v13/deployments', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${VERCEL_TOKEN}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: tenant.slug,
-          gitSource: { type: 'github', ref: 'master', repoId: 1306421369 },
-          target: 'production'
-        })
-      });
-      if (deployRes.ok) {
-        const deploy = await deployRes.json();
-        await supabase.from('tenants').update({ vercel_url: deploy.url ? `https://${deploy.url}` : `https://${createdVercelProject.name}.vercel.app`, updated_at: new Date().toISOString() }).eq('id', tenant.id);
-      }
+    if (currentStep === 'health_check') {
+      await updateJob('completed', 100, 'completed');
+      await supabase.from('tenants').update({ status: 'active', updated_at: new Date().toISOString() }).eq('id', tenant.id);
+      return { success: true, step: 'completed', progress: 100, done: true };
     }
-
-    // Step 6: Health check
-    await updateJob('health_check', 95);
-    await new Promise(r => setTimeout(r, 5000));
-
-    // Done
-    await updateJob('completed', 100, 'completed');
-    await supabase.from('tenants').update({ status: 'active', updated_at: new Date().toISOString() }).eq('id', tenant.id);
 
   } catch (error) {
     await updateJob('failed', 0, 'failed', error.message);
     await supabase.from('tenants').update({ status: 'failed', updated_at: new Date().toISOString() }).eq('id', tenant.id);
 
-    // Rollback
-    if (createdVercelProject && VERCEL_TOKEN) {
-      try { await fetch(`https://api.vercel.com/v9/projects/${createdVercelProject.id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${VERCEL_TOKEN}` } }); } catch(e) {}
+    const { data: t } = await supabase.from('tenants').select('vercel_project_id, supabase_project_ref').eq('id', tenant.id).single();
+    if (t.vercel_project_id && VERCEL_TOKEN) {
+      try { await fetch(`https://api.vercel.com/v9/projects/${t.vercel_project_id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${VERCEL_TOKEN}` } }); } catch(e) {}
     }
-    if (createdSupabaseProject && SUPABASE_ACCESS_TOKEN) {
-      try { await fetch(`https://api.supabase.com/v1/projects/${createdSupabaseProject.id}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${SUPABASE_ACCESS_TOKEN}` } }); } catch(e) {}
+    if (t.supabase_project_ref && t.supabase_project_ref !== 'factory-shared' && SUPABASE_ACCESS_TOKEN) {
+      try { await fetch(`https://api.supabase.com/v1/projects/${t.supabase_project_ref}`, { method: 'DELETE', headers: { 'Authorization': `Bearer ${SUPABASE_ACCESS_TOKEN}` } }); } catch(e) {}
     }
+
+    return { success: false, error: error.message, done: true };
   }
 }
 
@@ -1067,6 +1115,11 @@ module.exports = async (req, res) => {
     // Provisioning
     if (path === '/provision' && req.method === 'POST') {
       return await handleProvision(req, res);
+    }
+
+    // Provisioning step
+    if (path === '/provision/step' && req.method === 'POST') {
+      return await handleProvisionStep(req, res);
     }
 
     // File upload

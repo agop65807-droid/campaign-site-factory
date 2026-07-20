@@ -792,7 +792,7 @@
             });
             if (!startRes.success) throw new Error(startRes.error || 'Failed to start');
 
-            const jobId = startRes.job.id;
+            const jobId = startRes.jobId || (startRes.job && startRes.job.id);
             this.provisionProgress = { step: startRes.step || 'create_supabase', progress: startRes.progress || 10 };
 
             // Step through each stage

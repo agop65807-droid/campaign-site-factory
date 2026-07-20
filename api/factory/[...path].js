@@ -840,7 +840,7 @@ async function handleProvision(req, res) {
     });
 
     res.writeHead(200, corsHeaders);
-    res.end(JSON.stringify(result));
+    res.end(JSON.stringify({ ...result, jobId: job.id }));
   } catch (error) {
     console.error('Provision error:', error.message);
     res.writeHead(500, corsHeaders);

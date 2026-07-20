@@ -1,7 +1,17 @@
 const crypto = require('crypto');
 const { createClient } = require('@supabase/supabase-js');
 
-const supabase = createClient(process.env.FACTORY_SUPABASE_URL, process.env.FACTORY_SUPABASE_KEY);
+let supabase;
+try {
+  const url = process.env.FACTORY_SUPABASE_URL;
+  const key = process.env.FACTORY_SUPABASE_KEY;
+  if (!url || !key) {
+    console.error('Missing FACTORY_SUPABASE_URL or FACTORY_SUPABASE_KEY');
+  }
+  supabase = createClient(url || 'https://placeholder.supabase.co', key || 'placeholder');
+} catch (e) {
+  console.error('Supabase init error:', e.message);
+}
 const ENCRYPTION_KEY = process.env.FACTORY_ENCRYPTION_KEY || crypto.randomBytes(32).toString('hex');
 
 const corsHeaders = {
@@ -222,6 +232,12 @@ async function handleAuth(req, res) {
       return;
     }
 
+    if (!supabase) {
+      res.writeHead(500, corsHeaders);
+      res.end(JSON.stringify({ error: 'Database not configured', debug: { url: !!process.env.FACTORY_SUPABASE_URL, key: !!process.env.FACTORY_SUPABASE_KEY } }));
+      return;
+    }
+
     const { data: admin, error } = await supabase
       .from('super_admins')
       .select('*')
@@ -231,7 +247,7 @@ async function handleAuth(req, res) {
 
     if (error || !admin) {
       res.writeHead(401, corsHeaders);
-      res.end(JSON.stringify({ error: 'Invalid credentials' }));
+      res.end(JSON.stringify({ error: 'Invalid credentials', debug: error ? error.message : 'admin not found' }));
       return;
     }
 

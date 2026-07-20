@@ -665,7 +665,15 @@ async function provisionTenant(tenant, jobId, adminUsername, adminPassword) {
         updated_at: new Date().toISOString()
       }).eq('id', tenant.id);
     } else {
-      await updateJob('create_supabase', 10, 'running', 'Skipped: No Supabase Management API token configured');
+      // Use factory's Supabase as fallback
+      const factoryUrl = process.env.FACTORY_SUPABASE_URL;
+      const factoryKey = process.env.FACTORY_SUPABASE_KEY;
+      await supabase.from('tenants').update({
+        supabase_project_ref: 'factory-shared',
+        supabase_project_url: factoryUrl,
+        updated_at: new Date().toISOString()
+      }).eq('id', tenant.id);
+      await updateJob('create_supabase', 15, 'running', 'Using factory shared database (no Management API token)');
     }
 
     // Step 2: Wait for Supabase project to be ready + run migration
@@ -753,17 +761,26 @@ async function provisionTenant(tenant, jobId, adminUsername, adminPassword) {
 
     // Step 4: Set environment variables on Vercel
     await updateJob('set_env_vars', 70);
-    if (createdVercelProject && createdSupabaseProject) {
-      const tenantSupabaseUrl = `https://${createdSupabaseProject.id}.supabase.co`;
-      const keysRes = await fetch(`https://api.supabase.com/v1/projects/${createdSupabaseProject.id}/api-keys`, {
-        headers: { 'Authorization': `Bearer ${SUPABASE_ACCESS_TOKEN}` }
-      });
-      const keys = await keysRes.json();
-      const anonKey = keys.find(k => k.name === 'anon')?.api_key || keys[0]?.api_key;
+    if (createdVercelProject) {
+      let tenantSupabaseUrl, tenantAnonKey;
+      
+      if (createdSupabaseProject) {
+        // New Supabase project
+        const keysRes = await fetch(`https://api.supabase.com/v1/projects/${createdSupabaseProject.id}/api-keys`, {
+          headers: { 'Authorization': `Bearer ${SUPABASE_ACCESS_TOKEN}` }
+        });
+        const keys = await keysRes.json();
+        tenantSupabaseUrl = `https://${createdSupabaseProject.id}.supabase.co`;
+        tenantAnonKey = keys.find(k => k.name === 'anon')?.api_key || keys[0]?.api_key;
+      } else {
+        // Factory shared database
+        tenantSupabaseUrl = process.env.FACTORY_SUPABASE_URL;
+        tenantAnonKey = process.env.FACTORY_SUPABASE_KEY;
+      }
 
       const envVars = [
         { key: 'SUPABASE_URL', value: tenantSupabaseUrl },
-        { key: 'SUPABASE_KEY', value: anonKey },
+        { key: 'SUPABASE_KEY', value: tenantAnonKey },
         { key: 'ADMIN_USER', value: adminUsername || 'admin' },
         { key: 'ADMIN_PASS', value: adminPassword || 'changeme' }
       ];

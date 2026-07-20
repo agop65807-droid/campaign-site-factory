@@ -20,7 +20,7 @@
     },
     {
       "source": "/api/config",
-      "destination": "/api/factory/[...path].js"
+      "destination": "/api/factory/[...path].js?path=config"
     },
     {
       "source": "/api/:path*",

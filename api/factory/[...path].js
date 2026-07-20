@@ -197,6 +197,51 @@ function generatePassword(length = 16) {
 }
 
 // ============================================================================
+// TENANT RESOLUTION
+// ============================================================================
+
+let _tenantCache = new Map();
+
+async function resolveTenantId(req) {
+  const host = (req.headers.host || req.headers['x-forwarded-host'] || '').toLowerCase();
+  const url = new URL(req.url, `http://${host || 'localhost'}`);
+
+  // 1. Check X-Tenant-ID header (for factory API calls)
+  const headerTenantId = req.headers['x-tenant-id'];
+  if (headerTenantId && headerTenantId.length > 10) return headerTenantId;
+
+  // 2. Check query param
+  const paramTenantId = url.searchParams.get('tenant_id');
+  if (paramTenantId && paramTenantId.length > 10) return paramTenantId;
+
+  // 3. Resolve from subdomain: {slug}.campaigns.vercel.app
+  const parts = host.split('.');
+  if (parts.length >= 3) {
+    const slug = parts[0];
+    if (slug === 'www' || slug === 'api' || slug === 'factory') return null;
+
+    const cached = _tenantCache.get(slug);
+    if (cached && Date.now() - cached.ts < 60000) return cached.id;
+
+    try {
+      const { data } = await supabase.from('tenants').select('id').eq('slug', slug).eq('status', 'active').single();
+      if (data) {
+        _tenantCache.set(slug, { id: data.id, ts: Date.now() });
+        return data.id;
+      }
+    } catch (e) {
+      console.error('Tenant resolution error:', e.message);
+    }
+  }
+
+  return null;
+}
+
+function invalidateTenantCache(slug) {
+  _tenantCache.delete(slug);
+}
+
+// ============================================================================
 // TENANT-UNIQUE HELPERS
 // ============================================================================
 
@@ -255,6 +300,7 @@ async function logActivity(data) {
       action_type: data.actionType,
       campaign_id: data.campaignId || null,
       tweet_id: data.tweetId || null,
+      tenant_id: data.tenantId || null,
       details: data.details || {},
       ip_address: data.ip || null,
       user_agent: data.userAgent || null
@@ -975,8 +1021,31 @@ async function provisionStep(tenant, jobId, adminUsername, adminPassword) {
       if (t.supabase_project_ref === 'factory-shared') {
         const adminPass = adminPassword || generatePassword(16);
         const adminUser = adminUsername || 'admin';
-        const setupSQL = `DO $$ DECLARE v_salt TEXT := gen_salt('bf', 10); v_hash TEXT := crypt('${adminPass}', v_salt); BEGIN INSERT INTO main_admins (username, password_hash, password_salt, is_active, must_change_password) VALUES ('${adminUser}', v_hash, v_salt, true, true) ON CONFLICT (username) DO UPDATE SET password_hash = v_hash, password_salt = v_salt; END $$;`;
+        const setupSQL = `DO $$ DECLARE v_salt TEXT := gen_salt('bf', 10); v_hash TEXT := crypt('${adminPass}', v_salt); BEGIN INSERT INTO main_admins (username, password_hash, password_salt, is_active, must_change_password, tenant_id) VALUES ('${adminUser}', v_hash, v_salt, true, true, '${tenant.id}') ON CONFLICT (username) DO UPDATE SET password_hash = v_hash, password_salt = v_salt; END $$;`;
         try { await supabase.rpc('exec_sql', { sql: setupSQL }); } catch(e) { console.error('Admin setup error:', e.message); }
+        
+        await supabase.from('campaigns').insert({
+          name: 'حملة تضامن أبناء المهرة السلمي',
+          target_time: '2026-06-20T20:00:00.000+03:00',
+          target_timezone: 'Asia/Riyadh',
+          timezone_label: 'توقيت مكة المكرمة (GMT+3)',
+          is_active: true,
+          tenant_id: tenant.id
+        }).select('id').single().then(({ data }) => {
+          if (data) {
+            const tweetTexts = [
+              'ندعو الجميع للمشاركة في حملة التضامن مع أبناء المهرة السلمي. تواصلوا مع النواب واطلبوا وقف العدوان.',
+              'نطالب المجتمع الدولي بالتدخل الفوري لإيقاف العدوان على أبناء المهرة السلمي. #المهرة_السلمي',
+              'لا صمت بعد اليوم. شاركوا الحملة وانقلوا صوت أبناء المهرة السلمي للعالم أجمع.'
+            ];
+            const tweets = tweetTexts.map(text => ({
+              campaign_id: data.id, text, text_encoded: encodeURIComponent(text).replace(/[!'()*]/g, c => '%' + c.charCodeAt(0).toString(16).toUpperCase()),
+              created_at: new Date().toISOString(), tenant_id: tenant.id
+            }));
+            return supabase.from('tweets').insert(tweets);
+          }
+        }).catch(e => console.error('Default campaign error:', e.message));
+
         await supabase.from('tenants').update({
           subdomain: `${tenant.slug}.campaigns.vercel.app`,
           updated_at: new Date().toISOString()
@@ -1058,9 +1127,7 @@ async function provisionStep(tenant, jobId, adminUsername, adminPassword) {
 
         const envVars = [
           { key: 'SUPABASE_URL', value: tenantSupabaseUrl },
-          { key: 'SUPABASE_KEY', value: tenantAnonKey },
-          { key: 'ADMIN_USER', value: adminUsername || 'admin' },
-          { key: 'ADMIN_PASS', value: adminPassword || 'changeme' }
+          { key: 'SUPABASE_KEY', value: tenantAnonKey }
         ];
 
         for (const env of envVars) {
@@ -1212,11 +1279,10 @@ async function handleTenantConfig(req, res) {
   if (req.method !== 'GET') { res.writeHead(405, corsHeaders); res.end(JSON.stringify({ error: 'Method not allowed' })); return; }
 
   try {
-    const { data: settings, error } = await tenantSupabase
-      .from('site_settings')
-      .select('*')
-      .limit(1)
-      .single();
+    const tenantId = await resolveTenantId(req);
+    let query = tenantSupabase.from('site_settings').select('*');
+    if (tenantId) query = query.eq('tenant_id', tenantId);
+    const { data: settings, error } = await query.limit(1).single();
 
     if (error || !settings) {
       res.writeHead(200, corsHeaders);
@@ -1403,22 +1469,37 @@ async function handleTenantAuth(req, res) {
       return;
     }
 
-    const adminUser = process.env.ADMIN_USER;
-    const adminPass = process.env.ADMIN_PASS;
+    const tenantId = await resolveTenantId(req);
+    if (!tenantId) {
+      res.writeHead(400, corsHeaders);
+      res.end(JSON.stringify({ error: 'Tenant not identified. Use subdomain or X-Tenant-ID header.' }));
+      return;
+    }
+
     let authResult = null;
 
-    if (adminUser && adminPass) {
-      const adminUserClean = sanitizeInput(adminUser);
-      const adminPassClean = sanitizeInput(adminPass);
-      if (timingSafeCompare(username, adminUserClean) && timingSafeCompare(password, adminPassClean)) {
-        authResult = { success: true, adminType: 'main', name: 'المشرف الرئيسي' };
+    // Check main_admins table for this tenant
+    const { data: mainAdmin, error: mainErr } = await tenantSupabase
+      .from('main_admins')
+      .select('*')
+      .eq('tenant_id', tenantId)
+      .eq('username', username)
+      .eq('is_active', true)
+      .single();
+
+    if (!mainErr && mainAdmin) {
+      const hashedInput = hashPassword(password, mainAdmin.password_salt);
+      if (timingSafeCompare(hashedInput, mainAdmin.password_hash)) {
+        authResult = { success: true, adminType: 'main', name: mainAdmin.username || 'المشرف الرئيسي' };
       }
     }
 
+    // Check sub_admins table for this tenant
     if (!authResult) {
       const { data: subAdmin, error } = await tenantSupabase
         .from('sub_admins')
         .select('*')
+        .eq('tenant_id', tenantId)
         .eq('username', username)
         .eq('is_active', true)
         .single();
@@ -1451,6 +1532,7 @@ async function handleTenantAuth(req, res) {
       session_token_hash: tokenHash,
       admin_type: authResult.adminType,
       sub_admin_id: authResult.subAdminId || null,
+      tenant_id: tenantId,
       expires_at: expiresAt
     });
 
@@ -1565,12 +1647,14 @@ async function handleCampaign(req, res) {
   }
 
   try {
+    const tenantId = await resolveTenantId(req);
     const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
     const campaignId = url.searchParams.get('id');
     const now = new Date().toISOString();
     const isPublic = !req.headers.authorization;
 
     let query = tenantSupabase.from('campaigns').select('*');
+    if (tenantId) query = query.eq('tenant_id', tenantId);
     if (isPublic) query = query.eq('is_active', true);
     query = query.order('created_at', { ascending: false });
 
@@ -1616,7 +1700,7 @@ async function handleCampaign(req, res) {
       const campaign = campaigns.find(c => c.id === parseInt(campaignId, 10));
       if (!campaign) {
         if (!isPublic) {
-          const { data: directCampaign } = await tenantSupabase.from('campaigns').select('*').eq('id', parseInt(campaignId, 10)).single();
+          const { data: directCampaign } = await tenantSupabase.from('campaigns').select('*').eq('id', parseInt(campaignId, 10)).eq('tenant_id', tenantId).single();
           if (directCampaign) {
             const { data: tweetsData } = await tenantSupabase.from('tweets').select('*').eq('campaign_id', directCampaign.id).order('created_at', { ascending: false });
             res.writeHead(200, corsHeaders);
@@ -1721,6 +1805,7 @@ async function handleCampaignUpdate(parsed, user, req) {
 
   const videoUrl = validateUrl(parsed.videoUrl);
   const now = new Date().toISOString();
+  const tenantId = await resolveTenantId(req);
 
   const upsertData = {
     name, target_time: parsed.targetTime || null, end_time: parsed.endTime || null,
@@ -1728,7 +1813,8 @@ async function handleCampaignUpdate(parsed, user, req) {
     timezone_label: sanitizeText(parsed.timezoneLabel) || 'توقيت مكة المكرمة (GMT+3)',
     video_url: videoUrl || '', description: sanitizeText(parsed.description) || '',
     hashtag: sanitizeText(parsed.hashtag) || '',
-    is_active: parsed.isActive !== false, updated_at: now
+    is_active: parsed.isActive !== false, updated_at: now,
+    tenant_id: tenantId
   };
 
   if (campaignId) {
@@ -1773,10 +1859,12 @@ async function handleTweetInsert(parsed, user, req) {
   const encodedTweet = encodeTweetText(tweetText);
   const mediaUrl = validateUrl(parsed.mediaUrl);
   const now = new Date().toISOString();
+  const tenantId = await resolveTenantId(req);
 
   const insertData = {
     campaign_id: campaignIdNum, title, text: tweetText, text_encoded: encodedTweet,
-    updated_at: now, created_by_type: user.type, created_by_sub_admin_id: user.subAdminId
+    updated_at: now, created_by_type: user.type, created_by_sub_admin_id: user.subAdminId,
+    tenant_id: tenantId
   };
   if (mediaUrl) insertData.media_url = mediaUrl;
 
@@ -1822,6 +1910,7 @@ async function handleExcelImport(parsed, user, req) {
   if (!Array.isArray(tweetList) || tweetList.length === 0) throw new Error('No valid tweets found in import data');
 
   const now = new Date().toISOString();
+  const tenantId = await resolveTenantId(req);
   const inserts = [];
   for (const item of tweetList) {
     const text = sanitizeText(item.text || '');
@@ -1830,7 +1919,8 @@ async function handleExcelImport(parsed, user, req) {
     const insertData = {
       campaign_id: campaignIdNum, title: sanitizeText(item.title || '').substring(0, 100),
       text, text_encoded: encodeTweetText(text), created_at: now, updated_at: now,
-      created_by_type: user.type, created_by_sub_admin_id: user.subAdminId
+      created_by_type: user.type, created_by_sub_admin_id: user.subAdminId,
+      tenant_id: tenantId
     };
     if (mediaUrl) insertData.media_url = mediaUrl;
     inserts.push(insertData);
@@ -1889,9 +1979,10 @@ async function handleDeleteCampaign(req, res) {
       return;
     }
 
-    const { data: campaign } = await tenantSupabase.from('campaigns').select('name').eq('id', numericId).single();
-    await tenantSupabase.from('tweets').delete().eq('campaign_id', numericId);
-    const { error } = await tenantSupabase.from('campaigns').delete().eq('id', numericId);
+    const tenantId = await resolveTenantId(req);
+    const { data: campaign } = await tenantSupabase.from('campaigns').select('name').eq('id', numericId).eq('tenant_id', tenantId).single();
+    await tenantSupabase.from('tweets').delete().eq('campaign_id', numericId).eq('tenant_id', tenantId);
+    const { error } = await tenantSupabase.from('campaigns').delete().eq('id', numericId).eq('tenant_id', tenantId);
     if (error) {
       res.writeHead(500, corsHeaders);
       res.end(JSON.stringify({ error: error.message || 'Failed to delete campaign' }));
@@ -1961,8 +2052,9 @@ async function handleDeleteTweet(req, res) {
       return;
     }
 
-    const { data: tweet } = await tenantSupabase.from('tweets').select('campaign_id, text').eq('id', numericId).single();
-    const { error } = await tenantSupabase.from('tweets').delete().eq('id', numericId);
+    const tenantId = await resolveTenantId(req);
+    const { data: tweet } = await tenantSupabase.from('tweets').select('campaign_id, text').eq('id', numericId).eq('tenant_id', tenantId).single();
+    const { error } = await tenantSupabase.from('tweets').delete().eq('id', numericId).eq('tenant_id', tenantId);
     if (error) {
       res.writeHead(500, corsHeaders);
       res.end(JSON.stringify({ error: error.message || 'Failed to delete tweet' }));
@@ -2006,9 +2098,11 @@ async function handleSubAdmins(req, res) {
   try {
     switch (req.method) {
       case 'GET': {
+        const tenantId = await resolveTenantId(req);
         const { data: subAdmins, error } = await tenantSupabase
           .from('sub_admins')
           .select('id, name, username, is_active, permissions, created_at, updated_at, last_login_at')
+          .eq('tenant_id', tenantId)
           .order('created_at', { ascending: false });
 
         if (error) {
@@ -2055,11 +2149,13 @@ async function handleSubAdmins(req, res) {
           return;
         }
 
+        const tenantId = await resolveTenantId(req);
         const salt = generateSalt();
         const passwordHash = hashPassword(password, salt);
         const { data, error } = await tenantSupabase.from('sub_admins').insert({
           name: sanitizeInput(name), username: sanitizeInput(username),
           password_hash: passwordHash, password_salt: salt, is_active: true,
+          tenant_id: tenantId,
           permissions: permissions || { canAddTweets: true, canEditTweets: true, canDeleteTweets: false, canImportExcel: true, canViewReports: false }
         }).select('id, name, username, is_active, permissions, created_at').single();
 
@@ -2183,9 +2279,11 @@ async function handleInviteLinks(req, res) {
   try {
     switch (req.method) {
       case 'GET': {
+        const tenantId = await resolveTenantId(req);
         const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
         const campaignId = url.searchParams.get('campaignId');
         let query = tenantSupabase.from('invite_links').select('*');
+        if (tenantId) query = query.eq('tenant_id', tenantId);
         if (campaignId) query = query.eq('campaign_id', parseInt(campaignId));
         const { data, error } = await query.order('created_at', { ascending: false });
         if (error) {
@@ -2213,8 +2311,10 @@ async function handleInviteLinks(req, res) {
           return;
         }
         const code = generateInviteCode();
+        const tenantId = await resolveTenantId(req);
         const { data, error } = await tenantSupabase.from('invite_links').insert({
           campaign_id: parseInt(campaignId), name: sanitizeInput(name), code, is_active: true,
+          tenant_id: tenantId,
           created_by_type: admin.type, created_by_sub_admin_id: admin.id
         }).select().single();
         if (error) {
@@ -2325,12 +2425,14 @@ async function handleAnalytics(req, res) {
         return;
       }
 
+      const tenantId = await resolveTenantId(req);
       const insertData = {
         event_type: eventType,
         campaign_id: campaignId ? parseInt(campaignId) : null,
         tweet_id: tweetId ? parseInt(tweetId) : null,
         invite_code: inviteCode ? sanitizeInput(inviteCode) : null,
         visitor_id: visitorId ? sanitizeInput(visitorId) : null,
+        tenant_id: tenantId,
         metadata: sanitizeEventData(metadata),
         created_at: new Date().toISOString()
       };
@@ -2362,7 +2464,9 @@ async function handleAnalytics(req, res) {
     const campaignId = url.searchParams.get('campaignId');
 
     try {
+      const tenantId = await resolveTenantId(req);
       let query = tenantSupabase.from('analytics_events').select('*');
+      if (tenantId) query = query.eq('tenant_id', tenantId);
       if (campaignId) query = query.eq('campaign_id', parseInt(campaignId));
       const { data: events, error } = await query;
       if (error) {
@@ -2458,14 +2562,27 @@ async function handleAnalytics(req, res) {
 // HANDLER: /api/report
 // ============================================================================
 
-async function generateReportHTML(campaignId) {
-  const { data: campaign } = await tenantSupabase.from('campaigns').select('*').eq('id', parseInt(campaignId)).single();
+async function generateReportHTML(campaignId, tenantId) {
+  let campQuery = tenantSupabase.from('campaigns').select('*').eq('id', parseInt(campaignId));
+  if (tenantId) campQuery = campQuery.eq('tenant_id', tenantId);
+  const { data: campaign } = await campQuery.single();
   if (!campaign) return null;
 
-  const { data: tweets } = await tenantSupabase.from('tweets').select('*').eq('campaign_id', parseInt(campaignId)).order('created_at', { ascending: false });
-  const { data: analytics } = await tenantSupabase.from('analytics_events').select('*').eq('campaign_id', parseInt(campaignId));
-  const { data: inviteLinks } = await tenantSupabase.from('invite_links').select('*').eq('campaign_id', parseInt(campaignId));
-  const { data: activityLogs } = await tenantSupabase.from('admin_activity_logs').select('*').eq('campaign_id', parseInt(campaignId)).order('created_at', { ascending: false });
+  let tweetQuery = tenantSupabase.from('tweets').select('*').eq('campaign_id', parseInt(campaignId));
+  if (tenantId) tweetQuery = tweetQuery.eq('tenant_id', tenantId);
+  const { data: tweets } = await tweetQuery.order('created_at', { ascending: false });
+
+  let analyticsQuery = tenantSupabase.from('analytics_events').select('*').eq('campaign_id', parseInt(campaignId));
+  if (tenantId) analyticsQuery = analyticsQuery.eq('tenant_id', tenantId);
+  const { data: analytics } = await analyticsQuery;
+
+  let inviteQuery = tenantSupabase.from('invite_links').select('*').eq('campaign_id', parseInt(campaignId));
+  if (tenantId) inviteQuery = inviteQuery.eq('tenant_id', tenantId);
+  const { data: inviteLinks } = await inviteQuery;
+
+  let logsQuery = tenantSupabase.from('admin_activity_logs').select('*').eq('campaign_id', parseInt(campaignId));
+  if (tenantId) logsQuery = logsQuery.eq('tenant_id', tenantId);
+  const { data: activityLogs } = await logsQuery.order('created_at', { ascending: false });
 
   const allEvents = analytics || [];
   const now = new Date().toISOString();
@@ -2662,7 +2779,8 @@ async function handleReport(req, res) {
       return;
     }
 
-    const html = await generateReportHTML(campaignId);
+    const tenantId = await resolveTenantId(req);
+    const html = await generateReportHTML(campaignId, tenantId);
     if (!html) {
       res.writeHead(404, corsHeaders);
       res.end(JSON.stringify({ error: 'Campaign not found' }));

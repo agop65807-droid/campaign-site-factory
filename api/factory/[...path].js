@@ -206,7 +206,10 @@ async function resolveTenantId(req) {
   const host = (req.headers.host || req.headers['x-forwarded-host'] || '').toLowerCase();
   const url = new URL(req.url, `http://${host || 'localhost'}`);
 
-  // 1. Check X-Tenant-ID header (for factory API calls)
+  // 0. Check TENANT_ID env var (set on each tenant's Vercel project)
+  if (process.env.TENANT_ID) return process.env.TENANT_ID;
+
+  // 1. Check X-Tenant-ID header
   const headerTenantId = req.headers['x-tenant-id'];
   if (headerTenantId && headerTenantId.length > 10) return headerTenantId;
 
@@ -214,9 +217,9 @@ async function resolveTenantId(req) {
   const paramTenantId = url.searchParams.get('tenant_id');
   if (paramTenantId && paramTenantId.length > 10) return paramTenantId;
 
-  // 3. Resolve from subdomain: {slug}.campaigns.vercel.app
+  // 3. Resolve from subdomain via factory DB (only works on factory project)
   const parts = host.split('.');
-  if (parts.length >= 3) {
+  if (parts.length >= 3 && supabase) {
     const slug = parts[0];
     if (slug === 'www' || slug === 'api' || slug === 'factory') return null;
 
@@ -1127,7 +1130,8 @@ async function provisionStep(tenant, jobId, adminUsername, adminPassword) {
 
         const envVars = [
           { key: 'SUPABASE_URL', value: tenantSupabaseUrl },
-          { key: 'SUPABASE_KEY', value: tenantAnonKey }
+          { key: 'SUPABASE_KEY', value: tenantAnonKey },
+          { key: 'TENANT_ID', value: tenant.id }
         ];
 
         for (const env of envVars) {
@@ -1478,42 +1482,21 @@ async function handleTenantAuth(req, res) {
 
     let authResult = null;
 
-    // Check main_admins table for this tenant
-    const { data: mainAdmin, error: mainErr } = await tenantSupabase
-      .from('main_admins')
-      .select('*')
-      .eq('tenant_id', tenantId)
-      .eq('username', username)
-      .eq('is_active', true)
-      .single();
+    // Verify via PostgreSQL RPC (handles bcrypt comparison)
+    const { data: rpcResult, error: rpcErr } = await tenantSupabase
+      .rpc('verify_tenant_admin', {
+        p_tenant_id: tenantId,
+        p_username: username,
+        p_password: password
+      });
 
-    if (!mainErr && mainAdmin) {
-      const hashedInput = hashPassword(password, mainAdmin.password_salt);
-      if (timingSafeCompare(hashedInput, mainAdmin.password_hash)) {
-        authResult = { success: true, adminType: 'main', name: mainAdmin.username || 'المشرف الرئيسي' };
-      }
-    }
-
-    // Check sub_admins table for this tenant
-    if (!authResult) {
-      const { data: subAdmin, error } = await tenantSupabase
-        .from('sub_admins')
-        .select('*')
-        .eq('tenant_id', tenantId)
-        .eq('username', username)
-        .eq('is_active', true)
-        .single();
-
-      if (!error && subAdmin) {
-        const hashedInput = hashPassword(password, subAdmin.password_salt);
-        if (timingSafeCompare(hashedInput, subAdmin.password_hash)) {
-          await tenantSupabase.from('sub_admins').update({ last_login_at: new Date().toISOString() }).eq('id', subAdmin.id);
-          authResult = {
-            success: true, adminType: 'sub', subAdminId: subAdmin.id,
-            name: subAdmin.name, permissions: subAdmin.permissions
-          };
-        }
-      }
+    if (!rpcErr && rpcResult && rpcResult.success) {
+      authResult = {
+        success: true,
+        adminType: rpcResult.admin_type,
+        name: rpcResult.user_name,
+        subAdminId: rpcResult.admin_type === 'sub' ? rpcResult.user_id : null
+      };
     }
 
     if (!authResult || !authResult.success) {

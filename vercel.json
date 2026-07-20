@@ -3,8 +3,9 @@
   "rewrites": [
     { "source": "/admin", "destination": "/admin.html" },
     { "source": "/factory", "destination": "/factory.html" },
-    { "source": "/factory$", "destination": "/factory.html" },
-    { "source": "/factory/", "destination": "/factory.html" }
+    { "source": "/factory/", "destination": "/factory.html" },
+    { "source": "/api/config", "destination": "/api/factory/[...path].js?path=config" },
+    { "source": "/api/factory/:path+", "destination": "/api/factory/[...path]" }
   ],
   "headers": [
     {

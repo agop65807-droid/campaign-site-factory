@@ -973,6 +973,10 @@ async function provisionStep(tenant, jobId, adminUsername, adminPassword) {
     if (currentStep === 'run_migration') {
       const { data: t } = await supabase.from('tenants').select('supabase_project_ref').eq('id', tenant.id).single();
       if (t.supabase_project_ref === 'factory-shared') {
+        const adminPass = adminPassword || generatePassword(16);
+        const adminUser = adminUsername || 'admin';
+        const setupSQL = `DO $$ DECLARE v_salt TEXT := gen_salt('bf', 10); v_hash TEXT := crypt('${adminPass}', v_salt); BEGIN INSERT INTO main_admins (username, password_hash, password_salt, is_active, must_change_password) VALUES ('${adminUser}', v_hash, v_salt, true, true) ON CONFLICT (username) DO UPDATE SET password_hash = v_hash, password_salt = v_salt; END $$;`;
+        await supabase.rpc('exec_sql', { sql: setupSQL }).catch(() => {});
         await supabase.from('tenants').update({
           subdomain: `${tenant.slug}.campaigns.vercel.app`,
           updated_at: new Date().toISOString()

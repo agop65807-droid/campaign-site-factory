@@ -1667,16 +1667,6 @@ module.exports = async (req, res) => {
   const path = pathname.replace(/\/$/, '').replace(/\/\/+/g, '/');
   console.log('[API] Routed to path:', path);
 
-  // Pass factory routes to factory API handler
-  if (path.startsWith('/api/factory')) {
-    const factoryHandler = require('./factory/[...path].js');
-    if (typeof factoryHandler === 'function') {
-      return factoryHandler(req, res);
-    } else if (factoryHandler.default) {
-      return factoryHandler.default(req, res);
-    }
-  }
-
   switch (path) {
     case '/api/auth': return handleAuth(req, res);
     case '/api/logout': return handleLogout(req, res);
@@ -1690,6 +1680,14 @@ module.exports = async (req, res) => {
     case '/api/analytics': return handleAnalytics(req, res);
     case '/api/report': return handleReport(req, res);
     default:
+      if (path.startsWith('/api/factory')) {
+        try {
+          const factoryHandler = require(require('path').join(__dirname, 'factory', '[...path].js'));
+          return await factoryHandler(req, res);
+        } catch(e) {
+          console.error('[API] Factory handler error:', e.message);
+        }
+      }
       console.log('[API] 404 Not found for path:', path);
       res.writeHead(404, corsHeaders);
       res.end(JSON.stringify({ error: 'Not found', path }));

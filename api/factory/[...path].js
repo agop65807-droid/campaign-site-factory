@@ -603,9 +603,10 @@ async function handleProvision(req, res) {
 
     if (jobError) throw jobError;
 
-    // Start provisioning (async - in production this should be a background job)
-    provisionTenant(tenant, job.id, adminUsername, adminPassword).catch(err => {
+    // Start provisioning synchronously (wait for completion)
+    const provisionResult = await provisionTenant(tenant, job.id, adminUsername, adminPassword).catch(err => {
       console.error('Provisioning error:', err);
+      return { success: false, error: err.message };
     });
 
     await logFactoryActivity({
@@ -617,8 +618,11 @@ async function handleProvision(req, res) {
       userAgent: getUserAgent(req)
     });
 
+    // Re-fetch job status (may have been updated by provisionTenant)
+    const { data: updatedJob } = await supabase.from('provisioning_jobs').select('*').eq('id', job.id).single();
+
     res.writeHead(200, corsHeaders);
-    res.end(JSON.stringify({ success: true, job }));
+    res.end(JSON.stringify({ success: true, job: updatedJob || job }));
   } catch (error) {
     console.error('Provision error:', error.message);
     res.writeHead(500, corsHeaders);

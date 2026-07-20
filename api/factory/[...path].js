@@ -377,7 +377,7 @@ async function handleTenants(req, res) {
           primary_color: primaryColor || '#15803d',
           secondary_color: secondaryColor || '#d97706',
           theme_mode: themeMode || 'dark',
-          enabled_share_platforms: enabledSharePlatforms || '["x","whatsapp","facebook","telegram"]'::jsonb,
+          enabled_share_platforms: enabledSharePlatforms || ["x","whatsapp","facebook","telegram"],
           status: 'creating',
           created_by: admin.id
         }).select().single();

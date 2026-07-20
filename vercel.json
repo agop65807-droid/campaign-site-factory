@@ -3,13 +3,27 @@
   "functions": {
     "api/factory/[...path].js": {
       "maxDuration": 300
+    },
+    "api/site/[...path].js": {
+      "maxDuration": 30
     }
   },
   "rewrites": [
     { "source": "/admin", "destination": "/admin.html" },
     { "source": "/factory", "destination": "/factory.html" },
     { "source": "/factory/(.*)", "destination": "/factory.html" },
-    { "source": "/api/config", "destination": "/api/factory/[...path].js?path=config" }
+    { "source": "/api/config", "destination": "/api/factory/[...path].js?path=config" },
+    { "source": "/api/auth", "destination": "/api/site/[...path].js" },
+    { "source": "/api/logout", "destination": "/api/site/[...path].js" },
+    { "source": "/api/me", "destination": "/api/site/[...path].js" },
+    { "source": "/api/campaign", "destination": "/api/site/[...path].js" },
+    { "source": "/api/update", "destination": "/api/site/[...path].js" },
+    { "source": "/api/delete-campaign", "destination": "/api/site/[...path].js" },
+    { "source": "/api/delete-tweet", "destination": "/api/site/[...path].js" },
+    { "source": "/api/sub-admins", "destination": "/api/site/[...path].js" },
+    { "source": "/api/invite-links", "destination": "/api/site/[...path].js" },
+    { "source": "/api/analytics", "destination": "/api/site/[...path].js" },
+    { "source": "/api/report", "destination": "/api/site/[...path].js" }
   ],
   "headers": [
     {

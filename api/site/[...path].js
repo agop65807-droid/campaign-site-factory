@@ -1680,14 +1680,6 @@ module.exports = async (req, res) => {
     case '/api/analytics': return handleAnalytics(req, res);
     case '/api/report': return handleReport(req, res);
     default:
-      if (path.startsWith('/api/factory')) {
-        try {
-          const factoryHandler = require(require('path').join(__dirname, 'factory', '[...path].js'));
-          return await factoryHandler(req, res);
-        } catch(e) {
-          console.error('[API] Factory handler error:', e.message);
-        }
-      }
       console.log('[API] 404 Not found for path:', path);
       res.writeHead(404, corsHeaders);
       res.end(JSON.stringify({ error: 'Not found', path }));

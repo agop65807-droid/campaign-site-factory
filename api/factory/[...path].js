@@ -918,7 +918,11 @@ async function provisionStep(tenant, jobId, adminUsername, adminPassword) {
     const update = { step, progress, updated_at: new Date().toISOString() };
     if (status !== 'running') { update.status = status; update.completed_at = new Date().toISOString(); }
     if (errorLog) update.error_log = errorLog;
-    await supabase.from('provisioning_jobs').update(update).eq('id', jobId);
+    const { data, error } = await supabase.from('provisioning_jobs').update(update).eq('id', jobId).select();
+    if (error) {
+      console.error(`updateJob error (job ${jobId}, step ${step}):`, error.message);
+      throw new Error(`Failed to update job ${jobId} to step ${step}: ${error.message}`);
+    }
   };
 
   const { data: job } = await supabase.from('provisioning_jobs').select('*').eq('id', jobId).single();

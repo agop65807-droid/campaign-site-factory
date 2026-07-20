@@ -1,0 +1,22 @@
+{
+  "name": "campaign-site-factory",
+  "version": "5.0.0",
+  "description": "Campaign Site Factory - Multi-tenant campaign site generator with factory control plane",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod",
+    "dev:factory": "vercel dev --factory"
+  },
+  "dependencies": {
+    "@sparticuz/chromium": "^119.0.0",
+    "@supabase/supabase-js": "^2.39.0",
+    "puppeteer-core": "^21.6.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "vercel": "^33.0.0"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}

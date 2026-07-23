@@ -13,8 +13,6 @@ const factoryState = {
   setupToken2FA: null
 };
 
-const $ = (id) => document.getElementById(id);
-
 function showLoginView() {
   $('loginView').classList.remove('hidden');
   $('appView').classList.add('hidden');

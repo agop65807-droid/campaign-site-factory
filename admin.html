@@ -1,721 +1,215 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="لوحة تحكم الأدمن - السعودية سبب الفتن">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="referrer" content="strict-origin-when-cross-origin">
-  <title>لوحة التحكم | السعودية سبب الفتن</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          fontFamily: { cairo: ['Cairo', 'sans-serif'] },
-          colors: {
-            yemen: { green: '#1e3a8a', greenLight: '#2563eb', greenDark: '#1e40af', greenPale: '#dbeafe', green50: '#eff6ff', red: '#d97706', redLight: '#f59e0b', redDark: '#b45309', redPale: '#fef3c7', black: '#0a0a0a' },
-            light: { bg: '#f8fafc', card: '#ffffff', border: '#e2e8f0', text: '#1e293b', muted: '#64748b', hover: '#f1f5f9' }
-          },
-          animation: {
-            'fade-in': 'fadeIn 0.5s ease-out forwards', 'shake': 'shake 0.5s ease-in-out', 'slide-up': 'slideUp 0.5s ease-out forwards',
-            'scale-in': 'scaleIn 0.4s ease-out forwards', 'float': 'float 6s ease-in-out infinite'
-          },
-          keyframes: {
-            fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
-            shake: { '0%, 100%': { transform: 'translateX(0)' }, '25%': { transform: 'translateX(-5px)' }, '75%': { transform: 'translateX(5px)' } },
-            slideUp: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
-            scaleIn: { '0%': { opacity: '0', transform: 'scale(0.9)' }, '100%': { opacity: '1', transform: 'scale(1)' } },
-            float: { '0%, 100%': { transform: 'translateY(0px)' }, '50%': { transform: 'translateY(-20px)' } }
-          }
-        }
-      }
-    }
-  </script>
-  <style>
-    :root { --glass-bg: rgba(255,255,255,0.08); --glass-border: rgba(255,255,255,0.1); --glass-bg-strong: rgba(255,255,255,0.12); --glass-border-strong: rgba(255,255,255,0.15); --glass-card-bg: rgba(255,255,255,0.05); --glass-card-border: rgba(255,255,255,0.08); --glass-input-bg: rgba(0,0,0,0.3); --glass-input-border: rgba(255,255,255,0.1); --scrollbar-track: #0a0a0a; }
-    html.light { --glass-bg: rgba(255,255,255,0.85); --glass-border: rgba(148,163,184,0.2); --glass-bg-strong: rgba(255,255,255,0.95); --glass-border-strong: rgba(148,163,184,0.25); --glass-card-bg: rgba(255,255,255,0.8); --glass-card-border: rgba(148,163,184,0.15); --glass-input-bg: rgba(241,245,249,0.9); --glass-input-border: rgba(148,163,184,0.25); --scrollbar-track: #f1f5f9; }
-    html.light body { background: linear-gradient(135deg, #f8fafc 0%, #f0fdf4 50%, #fef2f2 100%); color: #1e293b; }
-    .glass { background: var(--glass-bg); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--glass-border); }
-    .glass-strong { background: var(--glass-bg-strong); backdrop-filter: blur(30px); -webkit-backdrop-filter: blur(30px); border: 1px solid var(--glass-border-strong); }
-    .glass-card { background: var(--glass-card-bg); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border: 1px solid var(--glass-card-border); }
-    .glass-input { background: var(--glass-input-bg); border: 1px solid var(--glass-input-border); transition: all 0.3s ease; color: inherit; }
-    html.light .glass-input { color: #1e293b; }
-    .glass-input:focus { border-color: rgba(21,128,61,0.6); box-shadow: 0 0 0 3px rgba(21,128,61,0.15); outline: none; }
-    .glass-input.error { border-color: rgba(185,28,28,0.6); box-shadow: 0 0 0 3px rgba(185,28,28,0.15); }
-    html.light .glass-input::placeholder { color: #94a3b8; }
-    .tweet-item { transition: all 0.2s ease; }
-    .tweet-item:hover { border-color: rgba(21,128,61,0.4); transform: translateY(-1px); }
-    .tab-btn { transition: all 0.3s ease; border-bottom: 2px solid transparent; }
-    .tab-btn.active { border-bottom-color: #15803d; color: white; }
-    html.light .tab-btn.active { color: #15803d; }
-    .file-drop-zone { transition: all 0.3s ease; border: 2px dashed rgba(21,128,61,0.3); }
-    .file-drop-zone:hover, .file-drop-zone.drag-over { border-color: rgba(21,128,61,0.8); background: rgba(21,128,61,0.05); }
-    html.light .file-drop-zone { border-color: rgba(21,128,61,0.2); background: rgba(21,128,61,0.02); }
-    .excel-preview-row:hover { background: rgba(21,128,61,0.05); }
-    ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: var(--scrollbar-track); } ::-webkit-scrollbar-thumb { background: #15803d; border-radius: 3px; }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>لوحة التحكم</title>
+  <link rel="icon" href="/favicon.ico" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/api/config.css" />
+  <link rel="stylesheet" href="/assets/app.css" />
+  <script src="/assets/js/xlsx.full.min.js" defer></script>
+  <script src="/assets/js/api.js" defer></script>
+  <script src="/assets/js/theme.js" defer></script>
+  <script src="/assets/js/admin.js" defer></script>
 </head>
-<body class="font-cairo bg-yemen-black text-white min-h-screen antialiased" x-data="adminApp()" x-init="checkSession()">
-  <div class="fixed inset-0 pointer-events-none z-0"><div class="absolute inset-0 bg-gradient-to-br from-yemen-green/5 via-transparent to-yemen-red/5"></div></div>
-
-  <!-- LOGIN VIEW -->
-  <template x-if="!isAuthenticated">
-    <div class="relative z-10 min-h-screen flex items-center justify-center p-4">
-      <div class="w-full max-w-md">
-        <div class="text-center mb-8 animate-fade-in">
-          <img src="/logo-dark.png" alt="" class="w-24 h-24 rounded-full mx-auto mb-4 border-2 border-yemen-green/40 shadow-xl object-cover" onerror="this.style.display='none'">
-          <h1 class="text-2xl font-black mb-1">لوحة التحكم</h1>
-           <p class="text-sm text-gray-400">السعودية سبب الفتن</p>
+<body>
+  <div id="loginView" class="flex items-center justify-center" style="min-height:100vh;padding:20px">
+    <div class="card" style="width:100%;max-width:420px">
+      <div class="text-center mb-6">
+        <img id="loginLogo" src="/logo-dark.png" alt="Logo" class="logo-preview" style="margin:0 auto 14px;width:72px;height:72px" />
+        <h1 class="text-2xl font-black">لوحة التحكم</h1>
+        <p id="loginOrgName" class="text-muted text-sm mt-2">أدخل بيانات الاعتماد</p>
+      </div>
+      <form id="loginForm">
+        <div class="mb-4"><label class="label">اسم المستخدم</label><input id="loginUsername" class="input" type="text" autocomplete="username" required maxlength="100" /></div>
+        <div class="mb-4"><label class="label">كلمة المرور</label><input id="loginPassword" class="input" type="password" autocomplete="current-password" required maxlength="200" /></div>
+        <div id="loginError" class="alert alert-danger mb-4 hidden"></div>
+        <button type="submit" id="loginBtn" class="btn btn-primary w-full btn-lg"><span id="loginBtnText">تسجيل الدخول</span></button>
+      </form>
+      <p class="text-center text-xs text-muted mt-6"><a href="/">→ العودة للرئيسية</a></p>
+    </div>
+  </div>
+  <div id="appView" class="app-shell hidden">
+    <aside class="sidebar">
+      <div class="brand">
+        <img id="brandLogo" src="/logo-dark.png" alt="Logo" />
+        <div><p class="font-bold text-sm">لوحة التحكم</p><p id="brandOrg" class="text-xs text-muted truncate" style="max-width:140px">الجهة</p></div>
+      </div>
+      <button class="nav-item active" data-section="campaigns"><span class="nav-icon">📢</span> الحملات</button>
+      <button class="nav-item" data-section="tweets"><span class="nav-icon">🐦</span> التغريدات</button>
+      <button class="nav-item" data-section="admins" data-perm="canCreateSubAdmin"><span class="nav-icon">👥</span> المشرفون</button>
+      <button class="nav-item" data-section="invites" data-perm="canCreateInvite"><span class="nav-icon">🔗</span> روابط الدعوة</button>
+      <button class="nav-item" data-section="stats" data-perm="canViewAnalytics"><span class="nav-icon">📊</span> الإحصائيات</button>
+      <button class="nav-item" data-section="reports" data-perm="canViewReports"><span class="nav-icon">📄</span> التقارير</button>
+      <div style="flex:1"></div>
+      <div class="divider"></div>
+      <div class="flex items-center gap-2 px-3 py-2">
+        <span style="width:34px;height:34px;border-radius:50%;background:rgb(var(--c-primary)/.2);display:inline-flex;align-items:center;justify-content:center">👤</span>
+        <div class="flex-1" style="min-width:0"><p id="userName" class="text-sm font-bold truncate">المشرف</p><p id="userType" class="text-xs text-muted">رئيسي</p></div>
+      </div>
+      <button id="logoutBtn" class="nav-item" style="color:#f87171"><span class="nav-icon">🚪</span> خروج</button>
+    </aside>
+    <main class="main">
+      <section id="sec-campaigns" class="section">
+        <div class="flex items-center justify-between flex-wrap gap-3 mb-6">
+          <div><h2 class="text-2xl font-black">إدارة الحملات</h2><p class="text-muted text-sm">إنشاء وتعديل الحملات</p></div>
+          <button class="btn btn-primary" data-action="new-campaign" data-perm="canCreateCampaign">+ حملة جديدة</button>
         </div>
-        <div class="glass rounded-2xl p-6 md:p-8 animate-slide-up" :class="{ 'animate-shake': shakeError }">
-          <h2 class="text-lg font-bold mb-1">تسجيل الدخول</h2>
-          <p class="text-sm text-gray-400 mb-6">أدخل بيانات الاعتماد للوصول إلى لوحة التحكم</p>
-          <template x-if="loginError">
-            <div class="bg-yemen-red/10 border border-yemen-red/30 rounded-xl p-3 mb-4 flex items-start gap-2">
-              <svg class="w-5 h-5 text-yemen-red flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-              <p class="text-sm text-yemen-redLight" x-text="loginError"></p>
-            </div>
-          </template>
-          <form @submit.prevent="handleLogin" class="space-y-4" autocomplete="on">
-            <div>
-              <label class="block text-sm font-semibold text-gray-300 mb-1.5">اسم المستخدم</label>
-              <input type="text" x-model="loginForm.username" class="glass-input w-full px-4 py-3 rounded-xl placeholder-gray-500 text-sm" placeholder="أدخل اسم المستخدم" dir="rtl" required>
-            </div>
-            <div>
-              <label class="block text-sm font-semibold text-gray-300 mb-1.5">كلمة المرور</label>
-              <div class="relative">
-                <input :type="showPassword ? 'text' : 'password'" x-model="loginForm.password" class="glass-input w-full px-4 py-3 rounded-xl placeholder-gray-500 text-sm pl-12" placeholder="أدخل كلمة المرور" dir="rtl" required minlength="6">
-                <button type="button" @click="showPassword = !showPassword" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors">
-                  <svg x-show="!showPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                  <svg x-show="showPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/></svg>
-                </button>
-              </div>
-            </div>
-            <button type="submit" :disabled="loginLoading" class="w-full bg-yemen-green hover:bg-yemen-greenLight disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold py-3 rounded-xl transition-all duration-300 flex items-center justify-center gap-2">
-              <template x-if="loginLoading"><svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></template>
-              <span x-text="loginLoading ? 'جاري التحقق...' : 'تسجيل الدخول'"></span>
-            </button>
-          </form>
+        <div id="campaignsGrid" class="grid grid-2"></div>
+      </section>
+      <section id="sec-tweets" class="section hidden">
+        <div class="flex items-center justify-between flex-wrap gap-3 mb-6">
+          <div><h2 class="text-2xl font-black">إدارة التغريدات</h2></div>
+          <div class="flex gap-2 flex-wrap">
+            <select id="tweetCampaignSelect" class="select" style="min-width:200px"></select>
+            <button class="btn btn-secondary" data-action="excel-import" data-perm="canImportExcel">📥 استيراد</button>
+            <button class="btn btn-primary" data-action="new-tweet" data-perm="canAddTweets">+ تغريدة</button>
+          </div>
         </div>
-        <div class="text-center mt-6">
-          <a href="/" class="text-sm text-gray-500 hover:text-gray-300 transition-colors flex items-center justify-center gap-1">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-            العودة إلى الصفحة الرئيسية
-          </a>
+        <div id="tweetsTableWrap" class="table-wrap">
+          <table class="table"><thead><tr><th>#</th><th>العنوان</th><th>النص</th><th>وسائط</th><th>بواسطة</th><th>إجراءات</th></tr></thead><tbody id="tweetsTbody"></tbody></table>
         </div>
+        <div id="tweetsEmpty" class="card empty-state hidden"><div class="icon">🐦</div><p>لا توجد تغريدات</p></div>
+      </section>
+      <section id="sec-admins" class="section hidden">
+        <div class="flex items-center justify-between flex-wrap gap-3 mb-6">
+          <div><h2 class="text-2xl font-black">المشرفون الفرعيون</h2></div>
+          <button class="btn btn-primary" data-action="new-subadmin">+ مشرف جديد</button>
+        </div>
+        <div class="table-wrap"><table class="table"><thead><tr><th>الاسم</th><th>المستخدم</th><th>الحالة</th><th>الصلاحيات</th><th>آخر دخول</th><th>إجراءات</th></tr></thead><tbody id="subAdminsTbody"></tbody></table></div>
+        <div id="subAdminsEmpty" class="card empty-state hidden"><div class="icon">👥</div><p>لا يوجد مشرفون</p></div>
+      </section>
+      <section id="sec-invites" class="section hidden">
+        <div class="flex items-center justify-between flex-wrap gap-3 mb-6">
+          <div><h2 class="text-2xl font-black">روابط الدعوة</h2></div>
+          <button class="btn btn-primary" data-action="new-invite">+ رابط جديد</button>
+        </div>
+        <div class="table-wrap"><table class="table"><thead><tr><th>الاسم</th><th>الكود</th><th>الرابط</th><th>الحالة</th><th>إجراءات</th></tr></thead><tbody id="invitesTbody"></tbody></table></div>
+        <div id="invitesEmpty" class="card empty-state hidden"><div class="icon">🔗</div><p>لا توجد روابط</p></div>
+      </section>
+      <section id="sec-stats" class="section hidden">
+        <div class="mb-6"><h2 class="text-2xl font-black">الإحصائيات</h2></div>
+        <div id="statsCards" class="grid grid-4 mb-6"></div>
+      </section>
+      <section id="sec-reports" class="section hidden">
+        <div class="mb-6"><h2 class="text-2xl font-black">التقارير</h2></div>
+        <div class="card" style="max-width:560px">
+          <label class="label">اختر الحملة</label>
+          <select id="reportCampaignSelect" class="select mb-4"></select>
+          <div class="flex gap-3">
+            <button class="btn btn-primary flex-1" data-action="download-report">⬇️ تحميل HTML</button>
+            <button class="btn btn-ghost flex-1" data-action="preview-report">👁️ معاينة</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <div id="changePasswordModal" class="modal-overlay hidden">
+    <div class="modal" style="max-width:440px">
+      <div class="modal-header"><h3 class="font-bold">تغيير كلمة المرور</h3></div>
+      <div class="modal-body">
+        <div class="alert alert-info mb-4">يجب تغيير كلمة المرور الافتراضية قبل المتابعة.</div>
+        <div class="mb-4"><label class="label">كلمة المرور الحالية</label><input id="cpOld" class="input" type="password" /></div>
+        <div class="mb-4"><label class="label">كلمة المرور الجديدة (10 أحرف+)</label><input id="cpNew" class="input" type="password" minlength="10" /></div>
+        <div><label class="label">تأكيد كلمة المرور</label><input id="cpConfirm" class="input" type="password" /></div>
+        <div id="cpError" class="alert alert-danger mt-3 hidden"></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-primary" data-action="save-password">حفظ ومتابعة</button></div>
+    </div>
+  </div>
+  <div id="campaignModal" class="modal-overlay hidden" data-close="campaignModal">
+    <div class="modal modal-lg">
+      <div class="modal-header"><h3 id="campaignModalTitle" class="font-bold">حملة جديدة</h3><button class="modal-close" data-close="campaignModal">×</button></div>
+      <div class="modal-body">
+        <div class="grid grid-2">
+          <div style="grid-column:1/-1"><label class="label">اسم الحملة *</label><input id="cmpName" class="input" maxlength="200" /></div>
+          <div><label class="label">رابط الفيديو</label><input id="cmpVideo" class="input" type="url" /></div>
+          <div><label class="label">هاشتاق</label><input id="cmpHashtag" class="input" /></div>
+          <div style="grid-column:1/-1"><label class="label">مقدمة الحملة</label><textarea id="cmpDescription" class="textarea" rows="2"></textarea></div>
+          <div><label class="label">تاريخ الإطلاق *</label><input id="cmpTargetDate" class="input" type="date" /></div>
+          <div><label class="label">وقت الإطلاق *</label><input id="cmpTargetTime" class="input" type="time" /></div>
+          <div style="grid-column:1/-1" class="flex items-center gap-3"><label class="switch"><input id="cmpActive" type="checkbox" checked /><span class="slider"></span></label><div><p class="text-sm font-semibold">تفعيل الحملة</p></div></div>
+        </div>
+        <div id="cmpError" class="alert alert-danger mt-4 hidden"></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-ghost" data-close="campaignModal">إلغاء</button><button class="btn btn-primary" data-action="save-campaign">حفظ</button></div>
+    </div>
+  </div>
+  <div id="tweetModal" class="modal-overlay hidden" data-close="tweetModal">
+    <div class="modal">
+      <div class="modal-header"><h3 id="tweetModalTitle" class="font-bold">تغريدة جديدة</h3><button class="modal-close" data-close="tweetModal">×</button></div>
+      <div class="modal-body">
+        <div class="mb-4"><label class="label">عنوان (اختياري)</label><input id="twTitle" class="input" maxlength="100" /></div>
+        <div class="mb-4"><label class="label">نص التغريدة *</label><textarea id="twText" class="textarea" rows="4" maxlength="280"></textarea><p class="text-xs text-muted text-left mt-1"><span id="twCounter">0</span>/280</p></div>
+        <div><label class="label">رابط وسائط</label><input id="twMedia" class="input" type="url" /></div>
+        <div id="twError" class="alert alert-danger mt-4 hidden"></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-ghost" data-close="tweetModal">إلغاء</button><button class="btn btn-primary" data-action="save-tweet">حفظ</button></div>
+    </div>
+  </div>
+  <div id="excelModal" class="modal-overlay hidden" data-close="excelModal">
+    <div class="modal modal-lg">
+      <div class="modal-header"><h3 class="font-bold">استيراد تغريدات</h3><button class="modal-close" data-close="excelModal">×</button></div>
+      <div class="modal-body">
+        <div class="alert alert-info mb-4">صيغة CSV: title, text, media_url</div>
+        <label class="card flex items-center justify-center flex-col gap-3" style="cursor:pointer;border-style:dashed;padding:36px">
+          <span style="font-size:36px">📥</span><span class="font-semibold">اسحب الملف هنا أو انقر</span>
+          <input id="excelFile" type="file" accept=".csv,.xlsx,.xls" class="hidden" />
+        </label>
+        <div id="excelPreview" class="mt-4 hidden">
+          <p class="text-sm font-bold mb-2">معاينة (<span id="excelCount">0</span> تغريدة)</p>
+          <div class="table-wrap" style="max-height:260px;overflow-y:auto"><table class="table"><thead><tr><th>#</th><th>العنوان</th><th>النص</th></tr></thead><tbody id="excelTbody"></tbody></table></div>
+        </div>
+        <div id="excelError" class="alert alert-danger mt-4 hidden"></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-ghost" data-close="excelModal">إلغاء</button><button class="btn btn-primary" data-action="confirm-import" id="confirmImportBtn" disabled>استيراد</button></div>
+    </div>
+  </div>
+  <div id="subAdminModal" class="modal-overlay hidden" data-close="subAdminModal">
+    <div class="modal">
+      <div class="modal-header"><h3 id="subAdminModalTitle" class="font-bold">مشرف جديد</h3><button class="modal-close" data-close="subAdminModal">×</button></div>
+      <div class="modal-body">
+        <div class="mb-4"><label class="label">الاسم *</label><input id="saName" class="input" maxlength="100" /></div>
+        <div class="grid grid-2 mb-4"><div><label class="label">اسم المستخدم *</label><input id="saUsername" class="input" maxlength="60" /></div><div><label class="label" id="saPasswordLabel">كلمة المرور *</label><input id="saPassword" class="input" type="password" /></div></div>
+        <p class="label">الصلاحيات</p>
+        <div class="grid grid-2 gap-2">
+          <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="checkbox" id="permAdd" checked /> إضافة</label>
+          <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="checkbox" id="permEdit" checked /> تعديل</label>
+          <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="checkbox" id="permDelete" /> حذف</label>
+          <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="checkbox" id="permExcel" checked /> Excel</label>
+          <label class="flex items-center gap-2 text-sm"><input type="checkbox" class="checkbox" id="permReports" /> تقارير</label>
+        </div>
+        <div id="saError" class="alert alert-danger mt-4 hidden"></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-ghost" data-close="subAdminModal">إلغاء</button><button class="btn btn-primary" data-action="save-subadmin">حفظ</button></div>
+    </div>
+  </div>
+  <div id="inviteModal" class="modal-overlay hidden" data-close="inviteModal">
+    <div class="modal" style="max-width:440px">
+      <div class="modal-header"><h3 class="font-bold">إنشاء رابط دعوة</h3><button class="modal-close" data-close="inviteModal">×</button></div>
+      <div class="modal-body">
+        <div class="mb-4"><label class="label">الحملة *</label><select id="invCampaign" class="select"></select></div>
+        <div><label class="label">اسم الرابط *</label><input id="invName" class="input" maxlength="100" /></div>
+        <div id="invError" class="alert alert-danger mt-4 hidden"></div>
+      </div>
+      <div class="modal-footer"><button class="btn btn-ghost" data-close="inviteModal">إلغاء</button><button class="btn btn-primary" data-action="save-invite">إنشاء</button></div>
+    </div>
+  </div>
+  <div id="confirmModal" class="modal-overlay hidden" data-close="confirmModal">
+    <div class="modal" style="max-width:400px">
+      <div class="modal-body text-center p-6">
+        <div style="font-size:40px" class="mb-3">⚠️</div>
+        <p id="confirmText" class="font-bold text-lg mb-2"></p>
+      </div>
+      <div class="modal-footer" style="justify-content:center">
+        <button class="btn btn-ghost" data-close="confirmModal">إلغاء</button>
+        <button class="btn btn-danger" id="confirmOkBtn">تأكيد</button>
       </div>
     </div>
-  </template>
-
-  <!-- DASHBOARD VIEW -->
-  <template x-if="isAuthenticated">
-    <div class="relative z-10 min-h-screen">
-      <header class="glass sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <img src="/logo-dark.png" alt="" class="w-10 h-10 rounded-full border border-yemen-green/40 object-cover" onerror="this.style.display='none'">
-            <div><h1 class="text-sm font-bold">لوحة التحكم</h1><p class="text-xs text-gray-400" x-text="userInfo.adminType === 'main' ? 'المشرف الرئيسي' : userInfo.name"></p></div>
-          </div>
-          <div class="flex items-center gap-3">
-            <div class="hidden sm:flex items-center gap-2 glass-card px-3 py-1.5 rounded-full">
-              <span class="w-2 h-2 rounded-full" :class="userInfo.adminType === 'main' ? 'bg-yemen-green' : 'bg-yemen-greenLight'"></span>
-              <span class="text-xs text-gray-300" x-text="userInfo.adminType === 'main' ? 'مدير النظام' : 'مشرف فرعي'"></span>
-            </div>
-            <button @click="logout" class="text-sm text-gray-400 hover:text-yemen-red transition-colors flex items-center gap-1">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-              <span class="hidden sm:inline">خروج</span>
-            </button>
-          </div>
-        </div>
-      </header>
-
-      <main class="max-w-7xl mx-auto px-4 py-6 md:py-8">
-        <!-- Messages -->
-        <template x-if="successMessage">
-          <div class="bg-yemen-green/10 border border-yemen-green/30 rounded-xl p-4 mb-6 flex items-start gap-3 animate-slide-up">
-            <svg class="w-5 h-5 text-yemen-green flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            <p class="text-sm font-semibold text-yemen-greenLight" x-text="successMessage"></p>
-          </div>
-        </template>
-        <template x-if="saveError">
-          <div class="bg-yemen-red/10 border border-yemen-red/30 rounded-xl p-4 mb-6 flex items-start gap-3 animate-slide-up">
-            <svg class="w-5 h-5 text-yemen-red flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            <p class="text-sm font-semibold text-yemen-redLight" x-text="saveError"></p>
-          </div>
-        </template>
-
-        <!-- Tabs -->
-        <div class="flex gap-4 mb-6 border-b border-white/10 overflow-x-auto pb-1">
-          <button @click="activeTab = 'campaigns'" class="tab-btn pb-3 text-sm font-semibold whitespace-nowrap" :class="activeTab === 'campaigns' ? 'active text-white' : 'text-gray-500 hover:text-gray-300'"><span class="flex items-center gap-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg> الحملات <span class="text-xs px-1.5 py-0.5 rounded-full" :class="activeTab === 'campaigns' ? 'bg-yemen-green/20 text-yemen-greenLight' : 'bg-gray-700/30 text-gray-500'" x-text="campaigns.length"></span></span></button>
-          <button @click="activeTab = 'tweets'" class="tab-btn pb-3 text-sm font-semibold whitespace-nowrap" :class="activeTab === 'tweets' ? 'active text-white' : 'text-gray-500 hover:text-gray-300'" :disabled="!selectedCampaignId"><span class="flex items-center gap-2"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg> التغريدات <span class="text-xs px-1.5 py-0.5 rounded-full" :class="activeTab === 'tweets' ? 'bg-yemen-green/20 text-yemen-greenLight' : 'bg-gray-700/30 text-gray-500'" x-text="currentTweets.length"></span></span></button>
-          <button x-show="isMainAdmin" @click="activeTab = 'subadmins'" class="tab-btn pb-3 text-sm font-semibold whitespace-nowrap" :class="activeTab === 'subadmins' ? 'active text-white' : 'text-gray-500 hover:text-gray-300'"><span class="flex items-center gap-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg> المشرفون</span></button>
-          <button x-show="isMainAdmin" @click="activeTab = 'invites'" class="tab-btn pb-3 text-sm font-semibold whitespace-nowrap" :class="activeTab === 'invites' ? 'active text-white' : 'text-gray-500 hover:text-gray-300'"><span class="flex items-center gap-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg> روابط الدعوة</span></button>
-          <button x-show="isMainAdmin" @click="activeTab = 'analytics'" class="tab-btn pb-3 text-sm font-semibold whitespace-nowrap" :class="activeTab === 'analytics' ? 'active text-white' : 'text-gray-500 hover:text-gray-300'"><span class="flex items-center gap-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg> الإحصائيات</span></button>
-          <button x-show="isMainAdmin" @click="activeTab = 'reports'" class="tab-btn pb-3 text-sm font-semibold whitespace-nowrap" :class="activeTab === 'reports' ? 'active text-white' : 'text-gray-500 hover:text-gray-300'"><span class="flex items-center gap-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg> التقارير</span></button>
-        </div>
-
-        <!-- CAMPAIGNS TAB -->
-        <div x-show="activeTab === 'campaigns'" x-transition:enter="animate-fade-in">
-          <div class="flex items-center justify-between mb-6">
-            <div><h2 class="text-xl md:text-2xl font-black mb-1">إدارة الحملات</h2><p class="text-sm text-gray-400">إنشاء، تعديل، وحذف الحملات</p></div>
-            <button x-show="canCreateCampaign()" @click="openCampaignForm()" class="bg-yemen-green hover:bg-yemen-greenLight text-white font-bold px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 text-sm"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> حملة جديدة</button>
-          </div>
-          <div x-show="showCampaignForm" class="glass-card rounded-xl p-5 md:p-6 mb-6 animate-scale-in">
-            <h3 class="text-sm font-bold mb-4" :class="isLightMode ? 'text-gray-900' : 'text-white'"><span x-text="editingCampaignId ? 'تعديل الحملة' : 'إنشاء حملة جديدة'"></span></h3>
-            <form @submit.prevent="saveCampaign()" class="space-y-4">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div><label class="block text-xs font-bold mb-1" :class="isLightMode ? 'text-gray-900' : 'text-white'">اسم الحملة <span class="text-yemen-red">*</span></label><input type="text" x-model="campaignForm.name" class="glass-input w-full px-4 py-3 rounded-xl text-sm" placeholder="اسم الحملة" dir="rtl" required></div>
-                <div><label class="block text-xs font-bold mb-1" :class="isLightMode ? 'text-gray-900' : 'text-white'">رابط الفيديو <span class="text-gray-500 font-normal">(اختياري)</span></label><input type="url" x-model="campaignForm.videoUrl" class="glass-input w-full px-4 py-3 rounded-xl text-sm" placeholder="https://..." dir="ltr"></div>
-                <div>
-                  <label class="block text-xs font-bold mb-1" :class="isLightMode ? 'text-gray-900' : 'text-white'">هاشتاق الحملة <span class="text-gray-500 font-normal">(اختياري)</span></label>
-                  <input type="text" x-model="campaignForm.hashtag" class="glass-input w-full px-4 py-3 rounded-xl text-sm" placeholder="#اسم_الحملة" dir="rtl">
-                </div>
-              </div>
-              <div><label class="block text-xs font-bold mb-1" :class="isLightMode ? 'text-gray-900' : 'text-white'">مقدمة الحملة <span class="text-gray-500 font-normal">(اختياري)</span></label><textarea x-model="campaignForm.description" rows="3" class="glass-input w-full px-4 py-3 rounded-xl text-sm resize-none" placeholder="اكتب مقدمة عن الحملة..." dir="rtl"></textarea></div>
-              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div><label class="block text-xs font-bold mb-1" :class="isLightMode ? 'text-gray-900' : 'text-white'">تاريخ الإطلاق <span class="text-yemen-red">*</span></label><input type="date" x-model="dateInputs.date" class="glass-input w-full px-4 py-3 rounded-xl text-sm" required></div>
-                <div><label class="block text-xs font-bold mb-1" :class="isLightMode ? 'text-gray-900' : 'text-white'">وقت الإطلاق <span class="text-yemen-red">*</span></label><input type="time" x-model="dateInputs.time" class="glass-input w-full px-4 py-3 rounded-xl text-sm" required></div>
-                <div><label class="block text-xs font-bold mb-1" :class="isLightMode ? 'text-gray-900' : 'text-white'">تاريخ الانتهاء <span class="text-gray-500 font-normal">(اختياري)</span></label><input type="date" x-model="dateInputs.endDate" class="glass-input w-full px-4 py-3 rounded-xl text-sm"></div>
-              </div>
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div><label class="block text-xs font-bold mb-1" :class="isLightMode ? 'text-gray-900' : 'text-white'">المنطقة الزمنية</label><select x-model="campaignForm.targetTimezone" class="glass-input w-full px-4 py-3 rounded-xl text-sm"><option value="Asia/Riyadh">مكة المكرمة (GMT+3)</option><option value="Asia/Aden">عدن (GMT+3)</option><option value="Asia/Dubai">دبي (GMT+4)</option><option value="Africa/Cairo">القاهرة (GMT+2)</option><option value="UTC">UTC (GMT+0)</option></select></div>
-                <div><label class="block text-xs font-bold mb-1" :class="isLightMode ? 'text-gray-900' : 'text-white'">عنوان التوقيت</label><input type="text" x-model="campaignForm.timezoneLabel" class="glass-input w-full px-4 py-3 rounded-xl text-sm" placeholder="توقيت مكة المكرمة (GMT+3)" dir="rtl"></div>
-              </div>
-              <div class="flex items-center justify-between glass-card rounded-xl p-4">
-                <div><label class="block text-xs font-bold mb-1" :class="isLightMode ? 'text-gray-900' : 'text-white'">تفعيل الحملة</label><p class="text-xs text-gray-500">عند التعطيل، لن تظهر للزوار</p></div>
-                <button type="button" @click="campaignForm.isActive = !campaignForm.isActive" class="relative w-14 h-7 rounded-full transition-all" :class="campaignForm.isActive ? 'bg-yemen-green' : 'bg-gray-600'"><span class="absolute top-0.5 w-6 h-6 rounded-full bg-white shadow transition-all" :class="campaignForm.isActive ? 'right-0.5' : 'left-0.5'"></span></button>
-              </div>
-              <div class="flex gap-3 pt-2">
-                <button type="submit" :disabled="saveLoading" class="flex-1 bg-yemen-green hover:bg-yemen-greenLight disabled:opacity-50 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2"><template x-if="saveLoading"><svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></template><span x-text="saveLoading ? 'جاري الحفظ...' : (editingCampaignId ? 'تحديث' : 'إنشاء')"></span></button>
-                <button type="button" @click="cancelCampaignForm()" class="px-6 py-3 glass hover:bg-white/10 font-semibold rounded-xl transition-all">إلغاء</button>
-              </div>
-            </form>
-          </div>
-          <div class="space-y-3">
-            <template x-for="campaign in campaigns" :key="campaign.id">
-              <div class="glass-card rounded-xl p-4 animate-scale-in" :class="{ 'active': selectedCampaignId === campaign.id }">
-                <div class="flex items-start gap-3">
-                  <div class="flex-shrink-0"><div class="w-10 h-10 rounded-full bg-yemen-green/20 flex items-center justify-center"><span class="text-sm font-bold text-yemen-green" x-text="campaign.id"></span></div></div>
-                  <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-2 mb-1 flex-wrap">
-                      <p class="text-sm font-bold" :class="isLightMode ? 'text-gray-900' : 'text-white'" x-text="campaign.campaignName"></p>
-                      <span class="px-2 py-0.5 rounded-full text-xs font-bold" :class="campaign.isActive ? 'bg-yemen-green/20 text-yemen-greenLight border border-yemen-green/30' : 'bg-gray-700/30 text-gray-400 border border-gray-600/30'" x-text="campaign.isActive ? 'نشطة' : 'معطلة'"></span>
-                    </div>
-                    <p x-show="campaign.description" class="text-xs mb-1 leading-relaxed line-clamp-2" :class="isLightMode ? 'text-gray-600' : 'text-gray-400'" x-text="campaign.description"></p>
-                    <div class="flex items-center gap-3 flex-wrap text-xs text-gray-500"><span x-text="'إطلاق: ' + formatDate(campaign.targetTime)"></span><span x-show="campaign.endTime" x-text="'انتهاء: ' + formatDate(campaign.endTime)"></span><span x-text="campaign.timezoneLabel"></span></div>
-                  </div>
-                  <div class="flex-shrink-0 flex items-center gap-1">
-                    <button @click="selectCampaign(campaign.id); activeTab = 'tweets'" class="p-2 text-gray-500 hover:text-yemen-green transition-colors rounded-lg hover:bg-yemen-green/10" title="إدارة التغريدات"><svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></button>
-                    <button x-show="canEditCampaign()" @click="editCampaign(campaign)" class="p-2 text-gray-500 hover:text-white transition-colors rounded-lg hover:bg-white/10" title="تعديل"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
-                    <button x-show="canDeleteCampaign()" @click="confirmDeleteCampaign = campaign.id" class="p-2 text-gray-500 hover:text-yemen-red transition-colors rounded-lg hover:bg-yemen-red/10" title="حذف"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
-                  </div>
-                </div>
-                <div x-show="confirmDeleteCampaign === campaign.id" x-transition class="mt-3 pt-3 border-t border-white/5">
-                  <div class="flex items-center gap-3">
-                    <p class="text-xs text-yemen-red flex-1">هل أنت متأكد من حذف هذه الحملة وكل تغريداتها؟ لا يمكن التراجع.</p>
-                    <button @click="confirmDeleteCampaign = null" class="text-xs text-gray-400 hover:text-white px-3 py-1.5 rounded-lg transition-colors">إلغاء</button>
-                    <button @click="deleteCampaign(campaign.id)" :disabled="deleteCampaignLoading === campaign.id" class="text-xs bg-yemen-red hover:bg-yemen-redLight disabled:opacity-50 text-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1"><template x-if="deleteCampaignLoading === campaign.id"><svg class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></template><span x-text="deleteCampaignLoading === campaign.id ? 'جاري...' : 'تأكيد'"></span></button>
-                  </div>
-                </div>
-              </div>
-            </template>
-            <div x-show="campaigns.length === 0" class="glass-card rounded-xl p-10 text-center">
-              <svg class="w-12 h-12 text-gray-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
-              <p class="text-gray-400 text-sm mb-1">لا توجد حملات حالياً</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- TWEETS TAB -->
-        <div x-show="activeTab === 'tweets'" x-transition:enter="animate-fade-in">
-          <div class="mb-4">
-            <button @click="activeTab = 'campaigns'" class="text-xs text-gray-400 hover:text-white transition-colors flex items-center gap-1 mb-2"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg> العودة إلى الحملات</button>
-            <h2 class="text-xl md:text-2xl font-black mb-1" x-text="selectedCampaignName ? 'تغريدات: ' + selectedCampaignName : 'تغريدات الحملة'"></h2>
-            <p class="text-sm text-gray-400">إدارة تغريدات هذه الحملة</p>
-          </div>
-          <div class="glass-card rounded-xl p-5 md:p-6 mb-6">
-            <h3 class="text-sm font-bold mb-4" :class="isLightMode ? 'text-gray-900' : 'text-white'" x-text="editingTweetId ? 'تعديل التغريدة' : 'إضافة تغريدة جديدة'"></h3>
-            <div class="space-y-4">
-              <div>
-                <label class="block text-xs font-bold mb-1.5" :class="isLightMode ? 'text-gray-700' : 'text-gray-300'">نص التغريدة <span class="text-yemen-red">*</span></label>
-                <textarea x-model="newTweetText" rows="4" class="glass-input w-full px-4 py-3 rounded-xl text-sm resize-none" :class="{ 'error': tweetValidationError }" placeholder="أدخل نص التغريدة..." dir="rtl" maxlength="280"></textarea>
-                <div class="flex justify-between items-center mt-1.5">
-                  <p x-show="tweetValidationError" class="text-xs text-yemen-red" x-text="tweetValidationError"></p>
-                  <p class="text-xs text-gray-500 mr-auto" x-text="newTweetText ? newTweetText.length + ' / 280' : '0 / 280'"></p>
-                </div>
-              </div>
-              <div>
-                <label class="block text-xs font-bold mb-1.5" :class="isLightMode ? 'text-gray-700' : 'text-gray-300'">رابط الوسائط <span class="text-gray-500 font-normal">(اختياري)</span></label>
-                <input type="url" x-model="newTweetMediaUrl" class="glass-input w-full px-4 py-3 rounded-xl text-sm" placeholder="https://example.com/image.jpg" dir="ltr">
-              </div>
-              <div class="flex gap-3">
-                <button @click="addOrUpdateTweet()" :disabled="tweetLoading" class="flex-1 bg-yemen-green hover:bg-yemen-greenLight disabled:opacity-50 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 text-sm"><template x-if="tweetLoading"><svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></template><span x-text="tweetLoading ? 'جاري الحفظ...' : (editingTweetId ? 'تحديث' : 'إضافة')"></span></button>
-                <button type="button" @click="cancelEditTweet()" x-show="editingTweetId" class="px-6 py-3 glass hover:bg-white/10 font-semibold rounded-xl transition-all">إلغاء</button>
-              </div>
-              <div x-show="canImportExcel()" class="pt-4 border-t border-white/5">
-                <button @click="copyExcelGuide()" class="text-xs text-yemen-green hover:text-yemen-greenLight transition-colors flex items-center gap-1 mb-3"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> دليل إعداد ملف Excel</button>
-                <div class="file-drop-zone rounded-xl p-6 text-center cursor-pointer" :class="{ 'drag-over': excelDragOver }" @dragover.prevent="excelDragOver = true" @dragleave.prevent="excelDragOver = false" @drop.prevent="handleExcelDrop($event)" @click="$refs.excelInput.click()">
-                  <input type="file" x-ref="excelInput" @change="handleExcelSelect($event)" accept=".xlsx,.xls,.csv" class="hidden">
-                  <svg class="w-10 h-10 mx-auto mb-2 text-yemen-green/60" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
-                  <p class="text-sm font-semibold mb-1" :class="isLightMode ? 'text-gray-700' : 'text-gray-200'">اسحب ملف Excel هنا أو انقر للاختيار</p>
-                  <p class="text-xs text-gray-500">يدعم .xlsx و .xls و .csv</p>
-                </div>
-                <template x-if="excelPreviewData.length > 0">
-                  <div class="mt-2">
-                    <div class="flex items-center justify-between mb-2"><p class="text-sm font-semibold" :class="isLightMode ? 'text-gray-700' : 'text-gray-200'">معاينة البيانات <span class="text-xs font-normal text-gray-500" x-text="excelPreviewData.length + ' تغريدة'"></span></p><button @click="excelPreviewData = []" class="text-xs text-gray-400 hover:text-yemen-red transition-colors">إلغاء</button></div>
-                    <div class="max-h-60 overflow-y-auto border rounded-lg" :class="isLightMode ? 'border-gray-200' : 'border-white/10'"><table class="w-full text-sm"><thead><tr :class="isLightMode ? 'bg-gray-50' : 'bg-white/5'"><th class="text-right px-3 py-2 text-xs font-semibold text-gray-400">#</th><th class="text-right px-3 py-2 text-xs font-semibold text-gray-400">النص</th><th class="text-right px-3 py-2 text-xs font-semibold text-gray-400">الوسائط</th></tr></thead><tbody><template x-for="(row, idx) in excelPreviewData" :key="idx"><tr class="excel-preview-row border-t" :class="isLightMode ? 'border-gray-100' : 'border-white/5'"><td class="px-3 py-2 text-xs text-gray-500" x-text="idx + 1"></td><td class="px-3 py-2 text-xs max-w-xs truncate" :class="isLightMode ? 'text-gray-700' : 'text-gray-200'" x-text="row.text || '-'"></td><td class="px-3 py-2 text-xs max-w-xs truncate text-gray-500" x-text="row.media_url || '-'"></td></tr></template></tbody></table></div>
-                    <button @click="importExcelTweets()" :disabled="excelImportLoading" class="mt-3 w-full bg-yemen-green hover:bg-yemen-greenLight disabled:opacity-50 text-white font-bold py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 text-sm"><template x-if="excelImportLoading"><svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></template><span x-text="excelImportLoading ? 'جاري الاستيراد...' : 'استيراد ' + excelPreviewData.length + ' تغريدة'"></span></button>
-                  </div>
-                </template>
-              </div>
-            </div>
-          </div>
-          <div>
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="text-sm font-bold flex items-center gap-2" :class="isLightMode ? 'text-gray-900' : 'text-white'"><svg class="w-4 h-4 text-yemen-green" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg> قائمة التغريدات <span class="bg-yemen-green/20 text-yemen-greenLight text-xs px-2 py-0.5 rounded-full" x-text="currentTweets.length"></span></h3>
-              <button @click="loadCampaignTweets(selectedCampaignId)" :disabled="refreshLoading" class="text-xs text-gray-400 hover:text-white transition-colors flex items-center gap-1"><svg class="w-3 h-3" :class="refreshLoading ? 'animate-spin' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> تحديث</button>
-            </div>
-            <div x-show="currentTweets.length === 0" class="glass-card rounded-xl p-10 text-center">
-              <svg class="w-12 h-12 text-gray-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
-              <p class="text-gray-400 text-sm mb-1">لا توجد تغريدات في هذه الحملة</p>
-            </div>
-            <div class="space-y-3">
-              <template x-for="(tweet, index) in currentTweets" :key="tweet.id">
-                <div class="tweet-item glass-card rounded-xl p-4">
-                  <div class="flex items-start gap-3">
-                    <div class="flex-shrink-0"><div class="w-8 h-8 rounded-full bg-yemen-green/20 flex items-center justify-center"><span class="text-xs font-bold text-yemen-green" x-text="currentTweets.length - index"></span></div></div>
-                    <div class="flex-1 min-w-0">
-                      <p class="text-sm leading-relaxed break-words" :class="isLightMode ? 'text-gray-700' : 'text-gray-200'" x-text="tweet.text"></p>
-                      <template x-if="tweet.media_url"><div class="mt-2 rounded-lg overflow-hidden border" :class="isLightMode ? 'border-gray-200' : 'border-white/10'"><template x-if="isVideoMedia(tweet.media_url)"><video :src="tweet.media_url" controls class="w-full max-h-32 object-contain bg-black"></video></template><template x-if="!isVideoMedia(tweet.media_url)"><img :src="tweet.media_url" class="w-full max-h-32 object-contain" alt=""></template></div></template>
-                      <div class="flex items-center gap-3 mt-2 flex-wrap"><span class="text-xs text-gray-600" x-text="formatDate(tweet.created_at)"></span><span class="text-xs text-gray-700">|</span><span class="text-xs text-gray-600" x-text="tweet.text.length + ' حرف'"></span><template x-if="tweet.created_by_type === 'sub'"><span class="text-xs px-2 py-0.5 rounded-full bg-yemen-green/10 text-yemen-greenLight">مشرف فرعي</span></template></div>
-                    </div>
-                    <div class="flex-shrink-0 flex items-center gap-1">
-                      <button x-show="canEditTweets()" @click="editTweet(tweet)" class="p-2 text-gray-500 hover:text-white transition-colors rounded-lg hover:bg-white/10" title="تعديل"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
-                      <button x-show="canDeleteTweets()" @click="confirmDeleteTweet = tweet.id" class="p-2 text-gray-500 hover:text-yemen-red transition-colors rounded-lg hover:bg-yemen-red/10" title="حذف"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
-                    </div>
-                  </div>
-                  <div x-show="confirmDeleteTweet === tweet.id" x-transition class="mt-3 pt-3 border-t border-white/5">
-                    <div class="flex items-center gap-3"><p class="text-xs text-yemen-red flex-1">هل أنت متأكد من حذف هذه التغريدة؟</p><button @click="confirmDeleteTweet = null" class="text-xs text-gray-400 hover:text-white px-3 py-1.5 rounded-lg transition-colors">إلغاء</button><button @click="deleteTweet(tweet.id)" :disabled="deleteLoading === tweet.id" class="text-xs bg-yemen-red hover:bg-yemen-redLight disabled:opacity-50 text-white px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1"><template x-if="deleteLoading === tweet.id"><svg class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></template><span x-text="deleteLoading === tweet.id ? 'جاري...' : 'تأكيد'"></span></button></div>
-                  </div>
-                </div>
-              </template>
-            </div>
-          </div>
-        </div>
-
-        <!-- SUB-ADMINS TAB -->
-        <div x-show="activeTab === 'subadmins'" x-transition:enter="animate-fade-in">
-          <div class="flex items-center justify-between mb-6">
-            <div><h2 class="text-xl md:text-2xl font-black mb-1">المشرفون الفرعيون</h2><p class="text-sm text-gray-400">إدارة المشرفين الفرعيين وصلاحياتهم</p></div>
-            <button @click="showSubAdminForm = true; editingSubAdminId = null; subAdminForm = { name: '', username: '', password: '', permissions: { canAddTweets: true, canEditTweets: true, canDeleteTweets: false, canImportExcel: true, canViewReports: false } }" class="bg-yemen-green hover:bg-yemen-greenLight text-white font-bold px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 text-sm"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> مشرف جديد</button>
-          </div>
-          <div x-show="showSubAdminForm" class="glass-card rounded-xl p-5 md:p-6 mb-6 animate-scale-in">
-            <h3 class="text-sm font-bold mb-4" :class="isLightMode ? 'text-gray-900' : 'text-white'" x-text="editingSubAdminId ? 'تعديل المشرف' : 'إضافة مشرف فرعي'"></h3>
-            <form @submit.prevent="saveSubAdmin()" class="space-y-4">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div><label class="block text-xs font-bold mb-1" :class="isLightMode ? 'text-gray-900' : 'text-white'">الاسم <span class="text-yemen-red">*</span></label><input type="text" x-model="subAdminForm.name" class="glass-input w-full px-4 py-3 rounded-xl text-sm" placeholder="اسم المشرف" dir="rtl" required></div>
-                <div><label class="block text-xs font-bold mb-1" :class="isLightMode ? 'text-gray-900' : 'text-white'">اسم المستخدم <span class="text-yemen-red">*</span></label><input type="text" x-model="subAdminForm.username" class="glass-input w-full px-4 py-3 rounded-xl text-sm" placeholder="username" dir="ltr" required></div>
-              </div>
-              <div><label class="block text-xs font-bold mb-1" :class="isLightMode ? 'text-gray-900' : 'text-white'">كلمة المرور <span class="text-gray-500 font-normal" x-text="editingSubAdminId ? '(اتركها فارغة للإبقاء على الحالية)' : '*'"></span></label><input type="password" x-model="subAdminForm.password" class="glass-input w-full px-4 py-3 rounded-xl text-sm" :required="!editingSubAdminId" minlength="6" dir="rtl"></div>
-              <div>
-                <label class="block text-xs font-bold mb-2" :class="isLightMode ? 'text-gray-900' : 'text-white'">الصلاحيات</label>
-                <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" x-model="subAdminForm.permissions.canAddTweets" class="rounded text-yemen-green"><span class="text-xs" :class="isLightMode ? 'text-gray-700' : 'text-gray-300'">إضافة تغريدات</span></label>
-                  <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" x-model="subAdminForm.permissions.canEditTweets" class="rounded text-yemen-green"><span class="text-xs" :class="isLightMode ? 'text-gray-700' : 'text-gray-300'">تعديل تغريدات</span></label>
-                  <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" x-model="subAdminForm.permissions.canDeleteTweets" class="rounded text-yemen-green"><span class="text-xs" :class="isLightMode ? 'text-gray-700' : 'text-gray-300'">حذف تغريدات</span></label>
-                  <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" x-model="subAdminForm.permissions.canImportExcel" class="rounded text-yemen-green"><span class="text-xs" :class="isLightMode ? 'text-gray-700' : 'text-gray-300'">استيراد Excel</span></label>
-                  <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" x-model="subAdminForm.permissions.canViewReports" class="rounded text-yemen-green"><span class="text-xs" :class="isLightMode ? 'text-gray-700' : 'text-gray-300'">عرض التقارير</span></label>
-                </div>
-              </div>
-              <div class="flex gap-3 pt-2">
-                <button type="submit" :disabled="saveLoading" class="flex-1 bg-yemen-green hover:bg-yemen-greenLight disabled:opacity-50 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2"><template x-if="saveLoading"><svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></template><span x-text="saveLoading ? 'جاري الحفظ...' : (editingSubAdminId ? 'تحديث' : 'إضافة')"></span></button>
-                <button type="button" @click="showSubAdminForm = false" class="px-6 py-3 glass hover:bg-white/10 font-semibold rounded-xl transition-all">إلغاء</button>
-              </div>
-            </form>
-          </div>
-          <div class="space-y-3">
-            <template x-for="sa in subAdmins" :key="sa.id">
-              <div class="glass-card rounded-xl p-4">
-                <div class="flex items-start gap-3">
-                  <div class="flex-shrink-0"><div class="w-10 h-10 rounded-full bg-yemen-green/20 flex items-center justify-center"><svg class="w-5 h-5 text-yemen-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg></div></div>
-                  <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-2 mb-1 flex-wrap"><p class="text-sm font-bold" :class="isLightMode ? 'text-gray-900' : 'text-white'" x-text="sa.name"></p><span class="text-xs text-gray-500" x-text="'@' + sa.username"></span><span class="px-2 py-0.5 rounded-full text-xs font-bold" :class="sa.is_active ? 'bg-yemen-green/20 text-yemen-greenLight border border-yemen-green/30' : 'bg-gray-700/30 text-gray-400 border border-gray-600/30'" x-text="sa.is_active ? 'نشط' : 'معطل'"></span></div>
-                    <div class="flex items-center gap-2 flex-wrap text-xs text-gray-500 mb-2"><span x-text="'دخول: ' + (sa.stats?.loginCount || 0)"></span><span>|</span><span x-text="'تغريدات: ' + (sa.stats?.tweetsAdded || 0)"></span><span>|</span><span x-text="'Excel: ' + (sa.stats?.excelImports || 0)"></span></div>
-                    <div class="flex gap-1 flex-wrap"><span x-show="sa.permissions?.canAddTweets" class="text-xs px-2 py-0.5 rounded-full bg-yemen-green/10 text-yemen-greenLight">إضافة</span><span x-show="sa.permissions?.canEditTweets" class="text-xs px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400">تعديل</span><span x-show="sa.permissions?.canDeleteTweets" class="text-xs px-2 py-0.5 rounded-full bg-yemen-red/10 text-yemen-redLight">حذف</span><span x-show="sa.permissions?.canImportExcel" class="text-xs px-2 py-0.5 rounded-full bg-purple-500/10 text-purple-400">Excel</span><span x-show="sa.permissions?.canViewReports" class="text-xs px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400">تقارير</span></div>
-                  </div>
-                  <div class="flex-shrink-0 flex items-center gap-1">
-                    <button @click="editSubAdmin(sa)" class="p-2 text-gray-500 hover:text-white transition-colors rounded-lg hover:bg-white/10" title="تعديل"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></button>
-                    <button @click="toggleSubAdmin(sa.id, sa.is_active)" class="p-2 transition-colors rounded-lg" :class="sa.is_active ? 'text-gray-500 hover:text-yemen-red hover:bg-yemen-red/10' : 'text-gray-500 hover:text-yemen-green hover:bg-yemen-green/10'" :title="sa.is_active ? 'تعطيل' : 'تفعيل'"><svg x-show="sa.is_active" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg><svg x-show="!sa.is_active" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></button>
-                  </div>
-                </div>
-              </div>
-            </template>
-            <div x-show="subAdmins.length === 0" class="glass-card rounded-xl p-10 text-center"><svg class="w-12 h-12 text-gray-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg><p class="text-gray-400 text-sm mb-1">لا يوجد مشرفون فرعيون</p></div>
-          </div>
-        </div>
-
-        <!-- INVITE LINKS TAB -->
-        <div x-show="activeTab === 'invites'" x-transition:enter="animate-fade-in">
-          <div class="flex items-center justify-between mb-6">
-            <div><h2 class="text-xl md:text-2xl font-black mb-1">روابط الدعوة</h2><p class="text-sm text-gray-400">إنشاء وإدارة روابط الدعوة</p></div>
-            <button @click="showInviteForm = true; inviteForm = { campaignId: campaigns[0]?.id || '', name: '' }" class="bg-yemen-green hover:bg-yemen-greenLight text-white font-bold px-4 py-2.5 rounded-xl transition-all flex items-center gap-2 text-sm"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg> رابط جديد</button>
-          </div>
-          <div x-show="showInviteForm" class="glass-card rounded-xl p-5 md:p-6 mb-6 animate-scale-in">
-            <h3 class="text-sm font-bold mb-4" :class="isLightMode ? 'text-gray-900' : 'text-white'">إنشاء رابط دعوة جديد</h3>
-            <form @submit.prevent="saveInviteLink()" class="space-y-4">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div><label class="block text-xs font-bold mb-1" :class="isLightMode ? 'text-gray-900' : 'text-white'">الحملة <span class="text-yemen-red">*</span></label><select x-model="inviteForm.campaignId" class="glass-input w-full px-4 py-3 rounded-xl text-sm" required><option value="">اختر الحملة</option><template x-for="c in campaigns" :key="c.id"><option :value="c.id" x-text="c.campaignName"></option></template></select></div>
-                <div><label class="block text-xs font-bold mb-1" :class="isLightMode ? 'text-gray-900' : 'text-white'">اسم الرابط <span class="text-yemen-red">*</span></label><input type="text" x-model="inviteForm.name" class="glass-input w-full px-4 py-3 rounded-xl text-sm" placeholder="مثال: فريق واتساب 1" dir="rtl" required></div>
-              </div>
-              <div class="flex gap-3 pt-2">
-                <button type="submit" :disabled="saveLoading" class="flex-1 bg-yemen-green hover:bg-yemen-greenLight disabled:opacity-50 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2"><template x-if="saveLoading"><svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></template><span x-text="saveLoading ? 'جاري الحفظ...' : 'إنشاء الرابط'"></span></button>
-                <button type="button" @click="showInviteForm = false" class="px-6 py-3 glass hover:bg-white/10 font-semibold rounded-xl transition-all">إلغاء</button>
-              </div>
-            </form>
-          </div>
-          <div class="space-y-3">
-            <template x-for="link in inviteLinks" :key="link.id">
-              <div class="glass-card rounded-xl p-4">
-                <div class="flex items-start gap-3">
-                  <div class="flex-shrink-0"><div class="w-10 h-10 rounded-full bg-yemen-green/20 flex items-center justify-center"><svg class="w-5 h-5 text-yemen-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg></div></div>
-                  <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-2 mb-1 flex-wrap"><p class="text-sm font-bold" :class="isLightMode ? 'text-gray-900' : 'text-white'" x-text="link.name"></p><span class="px-2 py-0.5 rounded-full text-xs font-bold" :class="link.is_active ? 'bg-yemen-green/20 text-yemen-greenLight border border-yemen-green/30' : 'bg-gray-700/30 text-gray-400 border border-gray-600/30'" x-text="link.is_active ? 'نشط' : 'معطل'"></span></div>
-                    <div class="flex items-center gap-2 mb-2"><code class="text-xs bg-black/20 px-2 py-1 rounded" :class="isLightMode ? 'text-gray-600' : 'text-gray-400'" x-text="getInviteUrl(link)"></code><button @click="copyToClipboard(getInviteUrl(link))" class="text-xs text-yemen-green hover:text-yemen-greenLight transition-colors">نسخ</button></div>
-                    <div class="flex items-center gap-3 flex-wrap text-xs text-gray-500"><span x-text="'الحملة: ' + getCampaignName(link.campaign_id)"></span><span x-text="'الكود: ' + link.code"></span></div>
-                  </div>
-                  <div class="flex-shrink-0 flex items-center gap-1"><button @click="toggleInviteLink(link.id, link.is_active)" class="p-2 transition-colors rounded-lg" :class="link.is_active ? 'text-gray-500 hover:text-yemen-red hover:bg-yemen-red/10' : 'text-gray-500 hover:text-yemen-green hover:bg-yemen-green/10'" :title="link.is_active ? 'تعطيل' : 'تفعيل'"><svg x-show="link.is_active" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg><svg x-show="!link.is_active" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></button></div>
-                </div>
-              </div>
-            </template>
-            <div x-show="inviteLinks.length === 0" class="glass-card rounded-xl p-10 text-center"><svg class="w-12 h-12 text-gray-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg><p class="text-gray-400 text-sm mb-1">لا توجد روابط دعوة</p></div>
-          </div>
-        </div>
-
-        <!-- ANALYTICS TAB -->
-        <div x-show="activeTab === 'analytics'" x-transition:enter="animate-fade-in">
-          <div class="flex items-center justify-between mb-6">
-            <div><h2 class="text-xl md:text-2xl font-black mb-1">الإحصائيات</h2><p class="text-sm text-gray-400">تحليلات وأداء الحملات</p></div>
-            <button @click="loadAnalytics()" :disabled="analyticsLoading" class="text-xs text-gray-400 hover:text-white transition-colors flex items-center gap-1"><svg class="w-3 h-3" :class="analyticsLoading ? 'animate-spin' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg> تحديث</button>
-          </div>
-          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
-            <div class="glass-card rounded-xl p-4 text-center"><div class="text-2xl font-black text-yemen-greenLight" x-text="analyticsSummary?.totalPageViews || 0"></div><div class="text-xs text-gray-500 mt-1">مشاهدات الصفحة</div></div>
-            <div class="glass-card rounded-xl p-4 text-center"><div class="text-2xl font-black text-yemen-greenLight" x-text="analyticsSummary?.totalCampaignViews || 0"></div><div class="text-xs text-gray-500 mt-1">مشاهدات الحملات</div></div>
-            <div class="glass-card rounded-xl p-4 text-center"><div class="text-2xl font-black text-yemen-greenLight" x-text="analyticsSummary?.totalShareClicks || 0"></div><div class="text-xs text-gray-500 mt-1">إجمالي المشاركات</div></div>
-            <div class="glass-card rounded-xl p-4 text-center"><div class="text-2xl font-black text-yemen-greenLight" x-text="analyticsSummary?.totalCopies || 0"></div><div class="text-xs text-gray-500 mt-1">النسخ</div></div>
-            <div class="glass-card rounded-xl p-4 text-center"><div class="text-2xl font-black text-yemen-greenLight" x-text="analyticsSummary?.totalInviteVisits || 0"></div><div class="text-xs text-gray-500 mt-1">زيارات دعوة</div></div>
-            <div class="glass-card rounded-xl p-4 text-center"><div class="text-2xl font-black text-yemen-greenLight" x-text="analyticsSummary?.uniqueVisitors || 0"></div><div class="text-xs text-gray-500 mt-1">زوار فريدون</div></div>
-          </div>
-          <!-- Shares by Platform -->
-          <div class="glass-card rounded-xl p-5 mb-6" x-show="analyticsSummary && analyticsSummary.sharesByPlatform">
-            <h3 class="text-sm font-bold mb-4 flex items-center gap-2" :class="isLightMode ? 'text-gray-900' : 'text-white'">
-              <svg class="w-4 h-4 text-yemen-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.291 12.934 8 12.403 8 11.75c0-1.5 1.5-3 3.5-3 1.397 0 2.397.651 3.4 1.5M9 4h6m-3 0V2m0 2a9 9 0 100 18m0-18a9 9 0 110 18"/></svg>
-              المشاركات حسب المنصة
-            </h3>
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
-              <div class="glass-card rounded-xl p-3 text-center">
-                <div class="w-9 h-9 mx-auto mb-2 rounded-full bg-black flex items-center justify-center">
-                  <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                </div>
-                <div class="text-xl font-black" :class="isLightMode ? 'text-gray-900' : 'text-white'" x-text="analyticsSummary?.sharesByPlatform?.x || 0"></div>
-                <div class="text-xs text-gray-500 mt-0.5">X</div>
-              </div>
-              <div class="glass-card rounded-xl p-3 text-center">
-                <div class="w-9 h-9 mx-auto mb-2 rounded-full bg-[#25D366] flex items-center justify-center">
-                  <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
-                </div>
-                <div class="text-xl font-black" :class="isLightMode ? 'text-gray-900' : 'text-white'" x-text="analyticsSummary?.sharesByPlatform?.whatsapp || 0"></div>
-                <div class="text-xs text-gray-500 mt-0.5">واتساب</div>
-              </div>
-              <div class="glass-card rounded-xl p-3 text-center">
-                <div class="w-9 h-9 mx-auto mb-2 rounded-full bg-[#1877F2] flex items-center justify-center">
-                  <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                </div>
-                <div class="text-xl font-black" :class="isLightMode ? 'text-gray-900' : 'text-white'" x-text="analyticsSummary?.sharesByPlatform?.facebook || 0"></div>
-                <div class="text-xs text-gray-500 mt-0.5">فيسبوك</div>
-              </div>
-              <div class="glass-card rounded-xl p-3 text-center">
-                <div class="w-9 h-9 mx-auto mb-2 rounded-full bg-[#0088cc] flex items-center justify-center">
-                  <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.662 3.508-1.529 5.847-2.539 7.018-3.03 3.341-1.387 4.034-1.627 4.804-1.64z"/></svg>
-                </div>
-                <div class="text-xl font-black" :class="isLightMode ? 'text-gray-900' : 'text-white'" x-text="analyticsSummary?.sharesByPlatform?.telegram || 0"></div>
-                <div class="text-xs text-gray-500 mt-0.5">تيليجرام</div>
-              </div>
-              <div class="glass-card rounded-xl p-3 text-center">
-                <div class="w-9 h-9 mx-auto mb-2 rounded-full bg-[#6366f1] flex items-center justify-center">
-                  <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.291 12.934 8 12.403 8 11.75c0-1.5 1.5-3 3.5-3 1.397 0 2.397.651 3.4 1.5M9 4h6m-3 0V2m0 2a9 9 0 100 18m0-18a9 9 0 110 18"/></svg>
-                </div>
-                <div class="text-xl font-black" :class="isLightMode ? 'text-gray-900' : 'text-white'" x-text="analyticsSummary?.sharesByPlatform?.native || 0"></div>
-                <div class="text-xs text-gray-500 mt-0.5">مشاركة أصلية</div>
-              </div>
-            </div>
-          </div>
-          <div class="glass-card rounded-xl p-5 mb-6" x-show="analyticsSummary && Object.keys(analyticsSummary.byCampaign || {}).length > 0">
-            <h3 class="text-sm font-bold mb-4" :class="isLightMode ? 'text-gray-900' : 'text-white'">حسب الحملة</h3>
-            <div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr :class="isLightMode ? 'bg-gray-50' : 'bg-white/5'"><th class="text-right px-3 py-2 text-xs font-semibold text-gray-400">الحملة</th><th class="text-right px-3 py-2 text-xs font-semibold text-gray-400">المشاهدات</th><th class="text-right px-3 py-2 text-xs font-semibold text-gray-400">المشاركات</th><th class="text-right px-3 py-2 text-xs font-semibold text-gray-400">X</th><th class="text-right px-3 py-2 text-xs font-semibold text-gray-400">واتساب</th><th class="text-right px-3 py-2 text-xs font-semibold text-gray-400">فيسبوك</th><th class="text-right px-3 py-2 text-xs font-semibold text-gray-400">النسخ</th><th class="text-right px-3 py-2 text-xs font-semibold text-gray-400">الزوار</th></tr></thead><tbody><template x-for="(stats, cid) in analyticsSummary.byCampaign" :key="cid"><tr class="border-t" :class="isLightMode ? 'border-gray-100' : 'border-white/5'"><td class="px-3 py-2 font-semibold" :class="isLightMode ? 'text-gray-700' : 'text-gray-200'" x-text="getCampaignName(cid)"></td><td class="px-3 py-2 text-gray-500" x-text="stats.campaignViews"></td><td class="px-3 py-2 text-gray-500" x-text="stats.shareClicks"></td><td class="px-3 py-2 text-gray-500" x-text="(stats.sharesByPlatform && stats.sharesByPlatform.x) || 0"></td><td class="px-3 py-2 text-gray-500" x-text="(stats.sharesByPlatform && stats.sharesByPlatform.whatsapp) || 0"></td><td class="px-3 py-2 text-gray-500" x-text="(stats.sharesByPlatform && stats.sharesByPlatform.facebook) || 0"></td><td class="px-3 py-2 text-gray-500" x-text="stats.copies"></td><td class="px-3 py-2 text-gray-500" x-text="stats.uniqueVisitors"></td></tr></template></tbody></table></div>
-          </div>
-          <div class="glass-card rounded-xl p-5" x-show="analyticsSummary && Object.keys(analyticsSummary.byInviteCode || {}).length > 0">
-            <h3 class="text-sm font-bold mb-4" :class="isLightMode ? 'text-gray-900' : 'text-white'">حسب رابط الدعوة</h3>
-            <div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr :class="isLightMode ? 'bg-gray-50' : 'bg-white/5'"><th class="text-right px-3 py-2 text-xs font-semibold text-gray-400">الكود</th><th class="text-right px-3 py-2 text-xs font-semibold text-gray-400">الزيارات</th><th class="text-right px-3 py-2 text-xs font-semibold text-gray-400">الزوار الفريدون</th><th class="text-right px-3 py-2 text-xs font-semibold text-gray-400">المشاركات</th></tr></thead><tbody><template x-for="(stats, code) in analyticsSummary.byInviteCode" :key="code"><tr class="border-t" :class="isLightMode ? 'border-gray-100' : 'border-white/5'"><td class="px-3 py-2 font-mono text-xs" :class="isLightMode ? 'text-gray-700' : 'text-gray-200'" x-text="code"></td><td class="px-3 py-2 text-gray-500" x-text="stats.totalVisits"></td><td class="px-3 py-2 text-gray-500" x-text="stats.uniqueVisitors"></td><td class="px-3 py-2 text-gray-500" x-text="stats.shareClicks"></td></tr></template></tbody></table></div>
-          </div>
-          <div x-show="!analyticsSummary || Object.keys(analyticsSummary.byCampaign || {}).length === 0" class="glass-card rounded-xl p-10 text-center"><svg class="w-12 h-12 text-gray-600 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg><p class="text-gray-400 text-sm">لا توجد بيانات تحليلية بعد</p></div>
-        </div>
-
-        <!-- REPORTS TAB -->
-        <div x-show="activeTab === 'reports'" x-transition:enter="animate-fade-in">
-          <div class="mb-6"><h2 class="text-xl md:text-2xl font-black mb-1">التقارير</h2><p class="text-sm text-gray-400">إصدار تقارير احترافية عن أداء الحملات</p></div>
-          <div class="glass-card rounded-xl p-5 md:p-6">
-            <div class="space-y-4">
-              <div><label class="block text-xs font-bold mb-2" :class="isLightMode ? 'text-gray-900' : 'text-white'">اختر الحملة</label><select x-model="reportCampaignId" class="glass-input w-full px-4 py-3 rounded-xl text-sm"><option value="">اختر الحملة</option><template x-for="c in campaigns" :key="c.id"><option :value="c.id" x-text="c.campaignName"></option></template></select></div>
-              <div class="flex gap-3">
-                <button @click="generateReport('html')" :disabled="!reportCampaignId || reportLoading" class="flex-1 bg-yemen-green hover:bg-yemen-greenLight disabled:opacity-50 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2"><template x-if="reportLoading"><svg class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg></template><svg x-show="!reportLoading" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg><span x-text="reportLoading ? 'جاري...' : 'عرض التقرير'"></span></button>
-                <button @click="generateReport('pdf')" :disabled="!reportCampaignId || reportLoading" class="flex-1 glass hover:bg-white/10 disabled:opacity-50 font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg><span>تحميل HTML</span></button>
-              </div>
-            </div>
-          </div>
-          <div x-show="reportHtml" class="mt-6 glass-card rounded-xl overflow-hidden">
-            <div class="p-4 border-b border-white/5 flex items-center justify-between"><h3 class="text-sm font-bold" :class="isLightMode ? 'text-gray-900' : 'text-white'">معاينة التقرير</h3><button @click="reportHtml = null" class="text-xs text-gray-400 hover:text-yemen-red transition-colors">إغلاق</button></div>
-            <iframe x-ref="reportFrame" class="w-full h-[600px] border-0" :srcdoc="reportHtml"></iframe>
-          </div>
-        </div>
-      </main>
-
-      <footer class="max-w-7xl mx-auto px-4 py-6 text-center">
-        <span class="inline-flex items-center gap-2 text-xs text-gray-600">
-          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-          نظام إدارة الحملات v4.0 | جلسات آمنة | تتبع Analytics | تقارير PDF
-        </span>
-      </footer>
-    </div>
-  </template>
-
-  <script>
-    function adminApp() {
-      return {
-        isAuthenticated: false, token: localStorage.getItem('adminToken'), showPassword: false,
-        loginLoading: false, loginError: null, shakeError: false, loginForm: { username: '', password: '' },
-        userInfo: {}, isMainAdmin: false, isLightMode: false, activeTab: 'campaigns',
-        successMessage: null, saveError: null, saveLoading: false,
-        campaigns: [], showCampaignForm: false, editingCampaignId: null,
-        campaignForm: { name: '', videoUrl: '', description: '', hashtag: '', targetTimezone: 'Asia/Riyadh', timezoneLabel: 'توقيت مكة المكرمة (GMT+3)', isActive: true },
-        dateInputs: { date: '', time: '', endDate: '' }, confirmDeleteCampaign: null, deleteCampaignLoading: null,
-        selectedCampaignId: null, selectedCampaignName: '', currentTweets: [],
-        newTweetText: '', newTweetMediaUrl: '', editingTweetId: null,
-        tweetLoading: false, tweetValidationError: null, confirmDeleteTweet: null,
-        deleteLoading: null, refreshLoading: false, excelDragOver: false,
-        excelPreviewData: [], excelImportLoading: false,
-        subAdmins: [], showSubAdminForm: false, editingSubAdminId: null,
-        subAdminForm: { name: '', username: '', password: '', permissions: { canAddTweets: true, canEditTweets: true, canDeleteTweets: false, canImportExcel: true, canViewReports: false } },
-        inviteLinks: [], showInviteForm: false, inviteForm: { campaignId: '', name: '' },
-        analyticsSummary: null, analyticsLoading: false,
-        reportCampaignId: '', reportLoading: false, reportHtml: null,
-
-        async checkSession() {
-          if (!this.token) { this.isAuthenticated = false; return; }
-          try {
-            const res = await fetch('/api/me', { headers: { 'Authorization': 'Bearer ' + this.token } });
-            const data = await res.json();
-            if (data.success) {
-              this.isAuthenticated = true; this.userInfo = data.user;
-              this.isMainAdmin = data.user.adminType === 'main';
-              await this.loadCampaigns();
-              if (this.isMainAdmin) { await this.loadSubAdmins(); await this.loadInviteLinks(); await this.loadAnalytics(); }
-            } else { this.logout(); }
-          } catch (e) { this.logout(); }
-        },
-
-        async handleLogin() {
-          this.loginLoading = true; this.loginError = null;
-          try {
-            const res = await fetch('/api/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(this.loginForm) });
-            const data = await res.json();
-            if (data.success) {
-              this.token = data.token; localStorage.setItem('adminToken', data.token);
-              this.userInfo = { adminType: data.adminType, name: data.name, permissions: data.permissions };
-              this.isMainAdmin = data.adminType === 'main'; this.isAuthenticated = true;
-              await this.loadCampaigns();
-              if (this.isMainAdmin) { await this.loadSubAdmins(); await this.loadInviteLinks(); await this.loadAnalytics(); }
-            } else { this.loginError = data.error || 'فشل تسجيل الدخول'; this.shakeError = true; setTimeout(() => this.shakeError = false, 500); }
-          } catch (e) { this.loginError = 'تعذر الاتصال بالخادم'; }
-          this.loginLoading = false;
-        },
-
-        async logout() {
-          try { await fetch('/api/logout', { method: 'POST', headers: { 'Authorization': 'Bearer ' + this.token } }); } catch (e) {}
-          this.token = null; localStorage.removeItem('adminToken');
-          this.isAuthenticated = false; this.userInfo = {}; this.isMainAdmin = false;
-        },
-
-        canCreateCampaign() { return this.isMainAdmin; },
-        canEditCampaign() { return this.isMainAdmin; },
-        canDeleteCampaign() { return this.isMainAdmin; },
-        canAddTweets() { return this.isMainAdmin || (this.userInfo.permissions?.canAddTweets); },
-        canEditTweets() { return this.isMainAdmin || (this.userInfo.permissions?.canEditTweets); },
-        canDeleteTweets() { return this.isMainAdmin || (this.userInfo.permissions?.canDeleteTweets); },
-        canImportExcel() { return this.isMainAdmin || (this.userInfo.permissions?.canImportExcel); },
-
-        async loadCampaigns() {
-          try {
-            const res = await fetch('/api/campaign', { headers: this.token ? { 'Authorization': 'Bearer ' + this.token } : {} });
-            const data = await res.json();
-            if (data.success) this.campaigns = data.campaigns || [];
-          } catch (e) {}
-        },
-
-        openCampaignForm() { this.editingCampaignId = null; this.campaignForm = { name: '', videoUrl: '', description: '', hashtag: '', targetTimezone: 'Asia/Riyadh', timezoneLabel: 'توقيت مكة المكرمة (GMT+3)', isActive: true }; this.dateInputs = { date: '', time: '', endDate: '' }; this.showCampaignForm = true; },
-        cancelCampaignForm() { this.showCampaignForm = false; },
-
-        editCampaign(campaign) {
-          this.editingCampaignId = campaign.id;
-          this.campaignForm = { name: campaign.campaignName, videoUrl: campaign.videoUrl || '', description: campaign.description || '', hashtag: campaign.hashtag || '', targetTimezone: campaign.targetTimezone || 'Asia/Riyadh', timezoneLabel: campaign.timezoneLabel || 'توقيت مكة المكرمة (GMT+3)', isActive: campaign.isActive };
-          if (campaign.targetTime) { const d = new Date(campaign.targetTime); this.dateInputs.date = d.toISOString().split('T')[0]; this.dateInputs.time = d.toTimeString().slice(0, 5); }
-          if (campaign.endTime) { this.dateInputs.endDate = new Date(campaign.endTime).toISOString().split('T')[0]; }
-          this.showCampaignForm = true;
-        },
-
-        async saveCampaign() {
-          this.saveLoading = true;
-          try {
-            const targetTime = this.dateInputs.date && this.dateInputs.time ? new Date(this.dateInputs.date + 'T' + this.dateInputs.time + ':00').toISOString() : null;
-            const endTime = this.dateInputs.endDate ? new Date(this.dateInputs.endDate + 'T23:59:59').toISOString() : null;
-            const res = await fetch('/api/update', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + this.token }, body: JSON.stringify({ type: 'campaign', campaignId: this.editingCampaignId, campaignName: this.campaignForm.name, videoUrl: this.campaignForm.videoUrl, description: this.campaignForm.description, hashtag: this.campaignForm.hashtag, targetTime, endTime, targetTimezone: this.campaignForm.targetTimezone, timezoneLabel: this.campaignForm.timezoneLabel, isActive: this.campaignForm.isActive }) });
-            const data = await res.json();
-            if (data.success) { this.showCampaignForm = false; this.successMessage = data.message; setTimeout(() => this.successMessage = null, 3000); await this.loadCampaigns(); }
-            else { this.saveError = data.error; setTimeout(() => this.saveError = null, 5000); }
-          } catch (e) { this.saveError = 'حدث خطأ'; }
-          this.saveLoading = false;
-        },
-
-        async deleteCampaign(id) {
-          this.deleteCampaignLoading = id;
-          try {
-            const res = await fetch('/api/delete-campaign', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + this.token }, body: JSON.stringify({ id }) });
-            const data = await res.json();
-            if (data.success) { this.confirmDeleteCampaign = null; this.successMessage = 'تم حذف الحملة'; setTimeout(() => this.successMessage = null, 3000); await this.loadCampaigns(); }
-          } catch (e) { this.saveError = 'حدث خطأ'; }
-          this.deleteCampaignLoading = null;
-        },
-
-        async selectCampaign(id) { this.selectedCampaignId = id; const c = this.campaigns.find(c => c.id === id); this.selectedCampaignName = c ? c.campaignName : ''; await this.loadCampaignTweets(id); },
-
-        async loadCampaignTweets(id) {
-          this.refreshLoading = true;
-          try { const res = await fetch('/api/campaign?id=' + id, { headers: this.token ? { 'Authorization': 'Bearer ' + this.token } : {} }); const data = await res.json(); if (data.success) this.currentTweets = data.tweets || []; }
-          catch (e) {}
-          this.refreshLoading = false;
-        },
-
-        async addOrUpdateTweet() {
-          if (!this.newTweetText.trim()) { this.tweetValidationError = 'نص التغريدة مطلوب'; return; }
-          if (this.newTweetText.length > 280) { this.tweetValidationError = 'النص يتجاوز 280 حرفاً'; return; }
-          this.tweetValidationError = null; this.tweetLoading = true;
-          try {
-            const payload = { type: 'tweet', campaignId: this.selectedCampaignId, tweetText: this.newTweetText, mediaUrl: this.newTweetMediaUrl };
-            if (this.editingTweetId) payload.tweetId = this.editingTweetId;
-            const res = await fetch('/api/update', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + this.token }, body: JSON.stringify(payload) });
-            const data = await res.json();
-            if (data.success) { this.newTweetText = ''; this.newTweetMediaUrl = ''; this.editingTweetId = null; this.successMessage = data.message; setTimeout(() => this.successMessage = null, 3000); await this.loadCampaignTweets(this.selectedCampaignId); }
-            else { this.saveError = data.error; }
-          } catch (e) { this.saveError = 'حدث خطأ'; }
-          this.tweetLoading = false;
-        },
-
-        editTweet(tweet) { this.editingTweetId = tweet.id; this.newTweetText = tweet.text || ''; this.newTweetMediaUrl = tweet.media_url || ''; },
-        cancelEditTweet() { this.editingTweetId = null; this.newTweetText = ''; this.newTweetMediaUrl = ''; this.tweetValidationError = null; },
-
-        async deleteTweet(id) {
-          this.deleteLoading = id;
-          try { const res = await fetch('/api/delete-tweet', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + this.token }, body: JSON.stringify({ id }) }); if (res.ok) { this.confirmDeleteTweet = null; await this.loadCampaignTweets(this.selectedCampaignId); } }
-          catch (e) {}
-          this.deleteLoading = null;
-        },
-
-        isVideoMedia(url) { if (!url) return false; const exts = ['.mp4', '.webm', '.ogg', '.mov', '.m4v']; return exts.some(e => url.toLowerCase().includes(e)) || url.toLowerCase().includes('video'); },
-
-        handleExcelDrop(e) { this.excelDragOver = false; const files = e.dataTransfer.files; if (files.length) this.parseExcelFile(files[0]); },
-        handleExcelSelect(e) { const files = e.target.files; if (files.length) this.parseExcelFile(files[0]); },
-        parseExcelFile(file) {
-          const reader = new FileReader();
-          reader.onload = (e) => { try { const data = new Uint8Array(e.target.result); const workbook = XLSX.read(data, { type: 'array' }); const sheet = workbook.Sheets[workbook.SheetNames[0]]; const json = XLSX.utils.sheet_to_json(sheet, { header: 1 }); const rows = json.slice(1); this.excelPreviewData = rows.map(row => ({ title: row[0] || '', text: row[1] || '', media_url: row[2] || '' })).filter(r => r.text); } catch (err) { this.saveError = 'خطأ في قراءة الملف'; } };
-          reader.readAsArrayBuffer(file);
-        },
-        async importExcelTweets() {
-          this.excelImportLoading = true;
-          try {
-            const res = await fetch('/api/update', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + this.token }, body: JSON.stringify({ type: 'excel_import', excelImport: true, campaignId: this.selectedCampaignId, tweets: this.excelPreviewData }) });
-            const data = await res.json();
-            if (data.success) { this.excelPreviewData = []; this.successMessage = 'تم استيراد ' + (data.count || 0) + ' تغريدة'; setTimeout(() => this.successMessage = null, 3000); await this.loadCampaignTweets(this.selectedCampaignId); }
-            else { this.saveError = data.error; }
-          } catch (e) { this.saveError = 'حدث خطأ'; }
-          this.excelImportLoading = false;
-        },
-        copyExcelGuide() { navigator.clipboard.writeText('عمود 1: العنوان (اختياري)\nعمود 2: نص التغريدة (مطلوب)\nعمود 3: رابط الوسائط (اختياري)').then(() => { this.successMessage = 'تم النسخ!'; setTimeout(() => this.successMessage = null, 2000); }); },
-
-        async loadSubAdmins() { try { const res = await fetch('/api/sub-admins', { headers: { 'Authorization': 'Bearer ' + this.token } }); const data = await res.json(); if (data.success) this.subAdmins = data.subAdmins || []; } catch (e) {} },
-
-        editSubAdmin(sa) { this.editingSubAdminId = sa.id; this.subAdminForm = { name: sa.name, username: sa.username, password: '', permissions: sa.permissions || { canAddTweets: true, canEditTweets: true, canDeleteTweets: false, canImportExcel: true, canViewReports: false } }; this.showSubAdminForm = true; },
-
-        async saveSubAdmin() {
-          this.saveLoading = true;
-          try {
-            const payload = { id: this.editingSubAdminId, name: this.subAdminForm.name, username: this.subAdminForm.username, permissions: this.subAdminForm.permissions };
-            if (this.subAdminForm.password) payload.password = this.subAdminForm.password;
-            if (!this.editingSubAdminId) delete payload.id;
-            const res = await fetch('/api/sub-admins', { method: this.editingSubAdminId ? 'PUT' : 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + this.token }, body: JSON.stringify(payload) });
-            const data = await res.json();
-            if (data.success) { this.showSubAdminForm = false; this.successMessage = this.editingSubAdminId ? 'تم التحديث' : 'تمت الإضافة'; setTimeout(() => this.successMessage = null, 3000); await this.loadSubAdmins(); }
-            else { this.saveError = data.error; }
-          } catch (e) { this.saveError = 'حدث خطأ'; }
-          this.saveLoading = false;
-        },
-
-        async toggleSubAdmin(id, currentStatus) {
-          try { const res = await fetch('/api/sub-admins', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + this.token }, body: JSON.stringify({ id, isActive: !currentStatus }) }); if (res.ok) { this.successMessage = currentStatus ? 'تم التعطيل' : 'تم التفعيل'; setTimeout(() => this.successMessage = null, 3000); await this.loadSubAdmins(); } } catch (e) {}
-        },
-
-        async loadInviteLinks() { try { const res = await fetch('/api/invite-links', { headers: { 'Authorization': 'Bearer ' + this.token } }); const data = await res.json(); if (data.success) this.inviteLinks = data.inviteLinks || []; } catch (e) {} },
-
-        async saveInviteLink() {
-          this.saveLoading = true;
-          try {
-            const res = await fetch('/api/invite-links', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + this.token }, body: JSON.stringify({ campaignId: this.inviteForm.campaignId, name: this.inviteForm.name }) });
-            const data = await res.json();
-            if (data.success) { this.showInviteForm = false; this.successMessage = 'تم إنشاء الرابط'; setTimeout(() => this.successMessage = null, 3000); await this.loadInviteLinks(); }
-            else { this.saveError = data.error; }
-          } catch (e) { this.saveError = 'حدث خطأ'; }
-          this.saveLoading = false;
-        },
-
-        async toggleInviteLink(id, currentStatus) {
-          try { const res = await fetch('/api/invite-links', { method: 'PUT', headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + this.token }, body: JSON.stringify({ id, isActive: !currentStatus }) }); if (res.ok) { this.successMessage = currentStatus ? 'تم التعطيل' : 'تم التفعيل'; setTimeout(() => this.successMessage = null, 3000); await this.loadInviteLinks(); } } catch (e) {}
-        },
-
-        getInviteUrl(link) { return window.location.origin + '/?campaign=' + link.campaign_id + '&invite=' + link.code; },
-        getCampaignName(id) { const c = this.campaigns.find(c => String(c.id) === String(id)); return c ? c.campaignName : 'حملة #' + id; },
-
-        async loadAnalytics() { this.analyticsLoading = true; try { const res = await fetch('/api/analytics', { headers: { 'Authorization': 'Bearer ' + this.token } }); const data = await res.json(); if (data.success) this.analyticsSummary = data.summary; } catch (e) {} this.analyticsLoading = false; },
-
-        async generateReport(format) {
-          this.reportLoading = true;
-          try {
-            const res = await fetch('/api/report?campaignId=' + this.reportCampaignId + '&format=' + format, { headers: { 'Authorization': 'Bearer ' + this.token } });
-            if (format === 'html') { const html = await res.text(); this.reportHtml = html; }
-            else { const blob = await res.blob(); const url = window.URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = 'report-' + this.reportCampaignId + '.html'; a.click(); window.URL.revokeObjectURL(url); }
-          } catch (e) { this.saveError = 'حدث خطأ'; }
-          this.reportLoading = false;
-        },
-
-        copyToClipboard(text) { navigator.clipboard.writeText(text).then(() => { this.successMessage = 'تم النسخ!'; setTimeout(() => this.successMessage = null, 2000); }); },
-
-        formatDate(isoString) { if (!isoString) return ''; try { return new Date(isoString).toLocaleString('ar-SA', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }); } catch { return isoString; } }
-      }
-    }
-  </script>
+  </div>
 </body>
 </html>

@@ -164,8 +164,8 @@ create index if not exists idx_provisioning_jobs_status on provisioning_jobs(sta
 -- ============================================================
 create table if not exists factory_activity_logs (
   id serial primary key,
-  super_admin_id uuid references super_admins(id),
-  tenant_id uuid references tenants(id),
+  super_admin_id uuid references super_admins(id) on delete set null,
+  tenant_id uuid references tenants(id) on delete set null,
   action_type text not null,
   details jsonb,
   ip_address text,

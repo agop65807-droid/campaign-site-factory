@@ -18,9 +18,9 @@ const contentTypes = {
 http.createServer((req, res) => {
   const pathname = new URL(req.url, `http://${req.headers.host || 'localhost'}`).pathname;
   const routes = {
-    '/': 'factory.html',
-    '/campaign': 'index.html',
-    '/factory': 'factory.html',
+    '/': 'index.html',
+    '/campaign': 'campaign.html',
+    '/factory': 'index.html',
     '/admin': 'admin.html'
   };
   const relativePath = routes[pathname] || pathname.replace(/^\/+/, '');

@@ -9,10 +9,9 @@
     "api/manifest.js": { "maxDuration": 10 }
   },
   "rewrites": [
-    { "source": "/", "destination": "/factory.html" },
-    { "source": "/campaign", "destination": "/index.html" },
+    { "source": "/campaign", "destination": "/campaign.html" },
     { "source": "/admin", "destination": "/admin.html" },
-    { "source": "/factory", "destination": "/factory.html" },
+    { "source": "/factory", "destination": "/index.html" },
     { "source": "/manifest.json", "destination": "/api/manifest.js" }
   ],
   "headers": [

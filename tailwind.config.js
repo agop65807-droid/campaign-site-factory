@@ -1,8 +1,8 @@
 module.exports = {
   content: [
     './index.html',
+    './campaign.html',
     './admin.html',
-    './factory.html',
     './assets/js/**/*.js'
   ],
   theme: {

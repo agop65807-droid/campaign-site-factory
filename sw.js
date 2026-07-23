@@ -1,5 +1,13 @@
-const CACHE_NAME = 'campaign-factory-v6';
-const STATIC_ASSETS = ['/', '/index.html', '/admin', '/assets/app.css', '/assets/js/public.js'];
+const CACHE_NAME = 'campaign-factory-v7';
+const STATIC_ASSETS = [
+  '/campaign',
+  '/campaign.html',
+  '/assets/app.css',
+  '/assets/js/api.js',
+  '/assets/js/theme.js',
+  '/assets/js/public.js',
+  '/logo-dark.png'
+];
 
 async function getSiteConfig() {
   try {
@@ -29,19 +37,29 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   if (event.request.url.includes('/api/')) return;
+  const requestUrl = new URL(event.request.url);
+  if (requestUrl.origin !== self.location.origin) return;
 
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(event.request)
-        .then((response) => {
-          if (!response || response.status !== 200 || response.type !== 'basic') return response;
-          const clone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-          return response;
+    fetch(event.request)
+      .then((response) => {
+        if (!response || response.status !== 200 || response.type !== 'basic') return response;
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        return response;
+      })
+      .catch(() =>
+        caches.match(event.request).then((cached) => {
+          if (cached) return cached;
+          if (
+            event.request.mode === 'navigate' &&
+            ['/campaign', '/campaign.html'].includes(requestUrl.pathname)
+          ) {
+            return caches.match('/campaign.html');
+          }
+          return Response.error();
         })
-        .catch(() => cached);
-    })
+      )
   );
 });
 

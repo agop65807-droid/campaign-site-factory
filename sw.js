@@ -5,8 +5,7 @@ const STATIC_ASSETS = [
   '/assets/app.css',
   '/assets/js/api.js',
   '/assets/js/theme.js',
-  '/assets/js/public.js',
-  '/logo-dark.png'
+  '/assets/js/public.js'
 ];
 
 async function getSiteConfig() {
@@ -20,7 +19,9 @@ async function getSiteConfig() {
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
+    caches.open(CACHE_NAME).then((cache) =>
+      Promise.allSettled(STATIC_ASSETS.map((asset) => cache.add(asset)))
+    )
   );
   self.skipWaiting();
 });

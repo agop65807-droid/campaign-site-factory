@@ -13,7 +13,6 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@tailwindcss/forms": "^0.5.7",
     "vercel": "^33.7.1"
   },
   "engines": {

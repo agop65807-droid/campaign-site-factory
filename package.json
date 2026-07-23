@@ -4,7 +4,7 @@
   "description": "Hardened multi-tenant campaign site factory",
   "scripts": {
     "dev": "node scripts/dev-server.js",
-    "build": "tailwindcss -i ./src/styles/app.css -o ./assets/app.css --minify",
+    "build": "npx --yes tailwindcss@3.4.10 -i ./src/styles/app.css -o ./assets/app.css --minify",
     "deploy": "vercel --prod"
   },
   "dependencies": {

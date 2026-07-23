@@ -34,7 +34,7 @@ create table if not exists tweets (
   text_encoded text,
   media_url text,
   created_by_type text check (created_by_type in ('main','sub')),
-  created_by_sub_admin_id integer,
+  created_by_sub_admin_id integer references sub_admins(id) on delete set null,
   created_at timestamptz not null default now(),
   updated_at timestamptz
 );

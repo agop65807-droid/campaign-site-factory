@@ -1,34 +1,27 @@
-const CACHE_NAME = 'campaign-system-v4-1';
-const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/admin',
-  '/admin.html',
-  '/logo-dark.png',
-  '/logo-bg.jpg',
-  'https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js',
-  'https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js',
-  'https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap'
-];
+const CACHE_NAME = 'campaign-factory-v6';
+const STATIC_ASSETS = ['/', '/index.html', '/admin', '/assets/app.css', '/assets/js/public.js'];
+
+async function getSiteConfig() {
+  try {
+    const res = await fetch('/api/config', { cache: 'no-store' });
+    return await res.json();
+  } catch {
+    return { orgName: 'الحملة', logoUrl: '/logo-dark.png' };
+  }
+}
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS);
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
   );
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames
-          .filter((name) => name !== CACHE_NAME)
-          .map((name) => caches.delete(name))
-      );
-    })
+    caches.keys().then((names) =>
+      Promise.all(names.filter((n) => n !== CACHE_NAME).map((n) => caches.delete(n)))
+    )
   );
   self.clients.claim();
 });
@@ -42,13 +35,9 @@ self.addEventListener('fetch', (event) => {
       if (cached) return cached;
       return fetch(event.request)
         .then((response) => {
-          if (!response || response.status !== 200 || response.type !== 'basic') {
-            return response;
-          }
-          const responseToCache = response.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
+          if (!response || response.status !== 200 || response.type !== 'basic') return response;
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
           return response;
         })
         .catch(() => cached);
@@ -57,26 +46,31 @@ self.addEventListener('fetch', (event) => {
 });
 
 self.addEventListener('push', (event) => {
-  const data = event.data ? event.data.json() : {};
-  const title = data.title || 'لجنة اعتصام أبناء المهرة';
-  const options = {
-    body: data.body || 'تحديث جديد',
-    icon: '/logo-dark.png',
-    badge: '/logo-dark.png',
-    tag: data.tag || 'campaign-notification',
-    requireInteraction: data.requireInteraction || false,
-    data: data.data || {}
-  };
-  event.waitUntil(self.registration.showNotification(title, options));
+  event.waitUntil(
+    getSiteConfig().then((cfg) => {
+      const data = event.data ? event.data.json() : {};
+      const title = data.title || cfg.orgName || 'الحملة';
+      const icon = cfg.logoUrl || '/logo-dark.png';
+
+      return self.registration.showNotification(title, {
+        body: data.body || 'تحديث جديد من الحملة',
+        icon,
+        badge: cfg.faviconUrl || icon,
+        tag: data.tag || 'campaign-notification',
+        requireInteraction: data.requireInteraction || false,
+        data: data.data || {}
+      });
+    })
+  );
 });
 
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   const url = event.notification.data?.url || '/';
   event.waitUntil(
-    clients.matchAll({ type: 'window' }).then((windowClients) => {
-      for (let client of windowClients) {
-        if (client.url === url && 'focus' in client) return client.focus();
+    clients.matchAll({ type: 'window' }).then((list) => {
+      for (const client of list) {
+        if (client.url.includes(url) && 'focus' in client) return client.focus();
       }
       if (clients.openWindow) return clients.openWindow(url);
     })

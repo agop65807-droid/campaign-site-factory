@@ -17,7 +17,13 @@ const contentTypes = {
 
 http.createServer((req, res) => {
   const pathname = new URL(req.url, `http://${req.headers.host || 'localhost'}`).pathname;
-  const relativePath = pathname === '/' ? 'index.html' : pathname.replace(/^\/+/, '');
+  const routes = {
+    '/': 'factory.html',
+    '/campaign': 'index.html',
+    '/factory': 'factory.html',
+    '/admin': 'admin.html'
+  };
+  const relativePath = routes[pathname] || pathname.replace(/^\/+/, '');
   const target = path.resolve(root, relativePath);
 
   if (!target.startsWith(`${root}${path.sep}`)) {

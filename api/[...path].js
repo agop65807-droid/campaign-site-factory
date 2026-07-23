@@ -8,6 +8,7 @@ const {
 } = require('../lib/crypto');
 
 const { tenantClient } = require('../lib/supabase');
+const factoryHandler = require('./factory/[...path].js');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -693,6 +694,10 @@ module.exports = async (req, res) => {
   let path = url.pathname.replace(/^\/api/, '') || '/';
 
   try {
+    if (path === '/factory' || path.startsWith('/factory/')) {
+      return await factoryHandler(req, res);
+    }
+
     if (path === '/auth' && req.method === 'POST') return await handleTenantAuth(req, res);
     if (path === '/auth/change-password') return await handleChangePassword(req, res);
     if (path === '/admin/identity') return await handleTenantIdentity(req, res);

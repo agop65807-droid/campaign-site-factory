@@ -15,6 +15,8 @@ app.get('/admin', (req, res) => {
   res.sendFile(path.join(__dirname, 'admin.html'));
 });
 
+app.get('/health', (req, res) => res.json({ status: 'ok', service: 'tenant-site' }));
+
 app.all('/api/*', async (req, res) => {
   try {
     await handler(req, res);
@@ -26,8 +28,6 @@ app.all('/api/*', async (req, res) => {
     }
   }
 });
-
-app.get('/health', (req, res) => res.json({ status: 'ok', service: 'tenant-site' }));
 
 app.use(express.static(path.join(__dirname), {
   index: 'index.html',

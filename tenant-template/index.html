@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="السعودية سبب الفتن - الحملة الإلكترونية الموحدة">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <title>السعودية سبب الفتن</title>
+
+  <!-- Open Graph / Twitter Card — Facebook and WhatsApp link previews read these tags
+       directly from the URL rather than any text passed in the share intent (see FR5),
+       so they need to be correct here. These are static for now (matching the current
+       single-tenant branding); the Factory template-update mechanism (see /factory) is
+       what will make these dynamic per-tenant once site_settings is wired into an
+       SSR/edge-injection step. -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="السعودية سبب الفتن">
+  <meta property="og:description" content="السعودية سبب الفتن - الحملة الإلكترونية الموحدة">
+  <meta property="og:image" content="/logo-dark.png">
+  <meta property="og:locale" content="ar_AR">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="السعودية سبب الفتن">
+  <meta name="twitter:description" content="السعودية سبب الفتن - الحملة الإلكترونية الموحدة">
+  <meta name="twitter:image" content="/logo-dark.png">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            cairo: ['Cairo', 'sans-serif'],
+          },
+          colors: {
+            yemen: {
+              green: '#1e3a8a',
+              greenLight: '#2563eb',
+              greenDark: '#1e40af',
+              greenPale: '#dbeafe',
+              green50: '#eff6ff',
+              red: '#d97706',
+              redLight: '#f59e0b',
+              redDark: '#b45309',
+              redPale: '#fef3c7',
+              black: '#0a0a0a',
+            },
+            light: {
+              bg: '#f8fafc',
+              card: '#ffffff',
+              border: '#e2e8f0',
+              text: '#1e293b',
+              muted: '#64748b',
+              hover: '#f1f5f9',
+            }
+          },
+          animation: {
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'pulse-fast': 'pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'bounce-gentle': 'bounceGentle 2s ease-in-out infinite',
+            'fade-in': 'fadeIn 0.8s ease-out forwards',
+            'fade-out': 'fadeOut 0.6s ease-in forwards',
+            'scale-in': 'scaleIn 0.6s ease-out forwards',
+            'glow-green': 'glowGreen 2s ease-in-out infinite alternate',
+            'glow-red': 'glowRed 2s ease-in-out infinite alternate',
+            'float': 'float 6s ease-in-out infinite',
+            'slide-up': 'slideUp 0.5s ease-out forwards',
+            'slide-down': 'slideDown 0.4s ease-out forwards',
+            'shake': 'shake 0.5s ease-in-out',
+          },
+          keyframes: {
+            bounceGentle: {
+              '0%, 100%': { transform: 'translateY(0)' },
+              '50%': { transform: 'translateY(-10px)' },
+            },
+            fadeIn: {
+              '0%': { opacity: '0', transform: 'translateY(20px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
+            fadeOut: {
+              '0%': { opacity: '1', transform: 'translateY(0)' },
+              '100%': { opacity: '0', transform: 'translateY(-20px)' },
+            },
+            scaleIn: {
+              '0%': { opacity: '0', transform: 'scale(0.8)' },
+              '100%': { opacity: '1', transform: 'scale(1)' },
+            },
+            glowGreen: {
+              '0%': { boxShadow: '0 0 20px rgba(21, 128, 61, 0.4)' },
+              '100%': { boxShadow: '0 0 40px rgba(21, 128, 61, 0.8), 0 0 60px rgba(21, 128, 61, 0.4)' },
+            },
+            glowRed: {
+              '0%': { boxShadow: '0 0 20px rgba(185, 28, 28, 0.4)' },
+              '100%': { boxShadow: '0 0 40px rgba(185, 28, 28, 0.8), 0 0 60px rgba(185, 28, 28, 0.4)' },
+            },
+            float: {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%': { transform: 'translateY(-20px)' },
+            },
+            slideUp: {
+              '0%': { opacity: '0', transform: 'translateY(20px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
+            slideDown: {
+              '0%': { opacity: '0', transform: 'translateY(-20px)' },
+              '100%': { opacity: '1', transform: 'translateY(0)' },
+            },
+            shake: {
+              '0%, 100%': { transform: 'translateX(0)' },
+              '25%': { transform: 'translateX(-5px)' },
+              '75%': { transform: 'translateX(5px)' },
+            },
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    :root {
+      --glass-bg: rgba(255, 255, 255, 0.08);
+      --glass-border: rgba(255, 255, 255, 0.1);
+      --glass-bg-strong: rgba(255, 255, 255, 0.12);
+      --glass-border-strong: rgba(255, 255, 255, 0.15);
+      --glass-card-bg: rgba(255, 255, 255, 0.05);
+      --glass-card-border: rgba(255, 255, 255, 0.08);
+      --input-bg: rgba(0, 0, 0, 0.3);
+      --scrollbar-track: #0a0a0a;
+      --pattern-opacity: 1;
+    }
+    html.light {
+      --glass-bg: rgba(255, 255, 255, 0.7);
+      --glass-border: rgba(148, 163, 184, 0.2);
+      --glass-bg-strong: rgba(255, 255, 255, 0.85);
+      --glass-border-strong: rgba(148, 163, 184, 0.25);
+      --glass-card-bg: rgba(255, 255, 255, 0.6);
+      --glass-card-border: rgba(148, 163, 184, 0.15);
+      --input-bg: rgba(241, 245, 249, 0.8);
+      --scrollbar-track: #f1f5f9;
+      --pattern-opacity: 0.3;
+    }
+    html.light body {
+      background: linear-gradient(135deg, #f0fdf4 0%, #f8fafc 50%, #fef2f2 100%);
+      color: #1e293b;
+    }
+    html.light .bg-pattern { opacity: var(--pattern-opacity); }
+    .glass {
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+    }
+    .glass-strong {
+      background: var(--glass-bg-strong);
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
+      border: 1px solid var(--glass-border-strong);
+    }
+    .glass-card {
+      background: var(--glass-card-bg);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border: 1px solid var(--glass-card-border);
+    }
+    .tweet-card { transition: all 0.3s ease; }
+    .tweet-card:hover {
+      border-color: rgba(21, 128, 61, 0.5);
+      transform: translateY(-2px);
+    }
+    .tweet-card.shared {
+      border-color: rgba(21, 128, 61, 0.6) !important;
+      background: rgba(21, 128, 61, 0.1) !important;
+    }
+    .tweet-card.shared .share-status { display: flex !important; }
+    html.light .tweet-card:hover {
+      border-color: rgba(21, 128, 61, 0.4);
+      background: rgba(21, 128, 61, 0.03);
+    }
+    html.light .tweet-card.shared {
+      border-color: rgba(21, 128, 61, 0.5) !important;
+      background: rgba(21, 128, 61, 0.06) !important;
+    }
+    .bg-pattern {
+      background-image:
+        radial-gradient(circle at 20% 50%, rgba(21, 128, 61, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 80% 50%, rgba(185, 28, 28, 0.15) 0%, transparent 50%),
+        radial-gradient(circle at 50% 100%, rgba(10, 10, 10, 0.8) 0%, transparent 50%);
+    }
+    .countdown-box {
+      background: linear-gradient(135deg, rgba(21, 128, 61, 0.2), rgba(185, 28, 28, 0.2));
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    html.light .countdown-box {
+      background: linear-gradient(135deg, rgba(21, 128, 61, 0.1), rgba(185, 28, 28, 0.1));
+      border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+    .btn-share {
+      background: linear-gradient(135deg, #15803d, #16a34a, #15803d);
+      background-size: 200% 200%;
+      animation: gradientShift 3s ease infinite;
+    }
+    .btn-share:hover { animation-play-state: paused; filter: brightness(1.1); }
+    /* Official brand colors, per platform (FR5). */
+    .btn-share-whatsapp { background: #25D366; }
+    .btn-share-whatsapp:hover { filter: brightness(1.08); box-shadow: 0 10px 25px -5px rgba(37, 211, 102, 0.4); }
+    .btn-share-facebook { background: #1877F2; }
+    .btn-share-facebook:hover { filter: brightness(1.08); box-shadow: 0 10px 25px -5px rgba(24, 119, 242, 0.4); }
+    .btn-share.shared-btn {
+      background: linear-gradient(135deg, #14532d, #15803d, #14532d);
+      opacity: 0.9;
+    }
+    .btn-share.shared-btn::after {
+      content: '\2714';
+      margin-right: 6px;
+      font-size: 0.9em;
+    }
+    @keyframes gradientShift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+    .share-modal-overlay {
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(8px);
+    }
+    html.light .share-modal-overlay { background: rgba(0, 0, 0, 0.5); }
+    .share-modal { animation: scaleIn 0.3s ease-out forwards; }
+    .media-container video, .media-container img {
+      max-height: 300px;
+      object-fit: contain;
+    }
+    .theme-toggle { transition: all 0.3s ease; }
+    .theme-toggle:hover { transform: scale(1.1); }
+    .parallax-bg { will-change: transform; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--scrollbar-track); }
+    ::-webkit-scrollbar-thumb { background: #15803d; border-radius: 3px; }
+    html { scroll-behavior: smooth; }
+    .participation-badge {
+      display: none;
+      align-items: center;
+      gap: 4px;
+      background: rgba(21, 128, 61, 0.2);
+      color: #16a34a;
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-weight: 600;
+    }
+    html.light .participation-badge { background: rgba(21, 128, 61, 0.1); }
+    .security-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.65rem;
+      opacity: 0.6;
+    }
+  </style>
+</head>
+
+<body
+  class="font-cairo bg-yemen-black text-white min-h-screen overflow-x-hidden antialiased"
+  x-data="campaignApp()"
+  x-init="init()"
+  :class="{ 'light': isLightMode }"
+>
+  <!-- Background Layer -->
+  <div class="fixed inset-0 bg-pattern pointer-events-none z-0 parallax-bg"></div>
+
+  <!-- Floating particles -->
+  <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+    <div class="absolute top-20 left-10 w-2 h-2 bg-yemen-green/30 rounded-full animate-float" style="animation-delay: 0s;"></div>
+    <div class="absolute top-60 right-20 w-1.5 h-1.5 bg-yemen-red/30 rounded-full animate-float" style="animation-delay: 1s;"></div>
+    <div class="absolute bottom-40 left-1/4 w-2 h-2 bg-white/10 rounded-full animate-float" style="animation-delay: 2s;"></div>
+    <div class="absolute top-40 right-1/3 w-1 h-1 bg-yemen-green/40 rounded-full animate-float" style="animation-delay: 3s;"></div>
+  </div>
+
+  <!-- Loading State -->
+  <template x-if="loading">
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-yemen-black">
+      <div class="text-center">
+        <div class="w-16 h-16 border-4 border-yemen-green border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+        <p class="text-gray-400 text-sm">جاري التحميل...</p>
+      </div>
+    </div>
+  </template>
+
+  <!-- Error State -->
+  <template x-if="error && !loading">
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-yemen-black p-4">
+      <div class="glass-strong rounded-2xl p-8 max-w-md w-full text-center">
+        <div class="w-16 h-16 bg-yemen-red/20 rounded-full flex items-center justify-center mx-auto mb-4">
+          <svg class="w-8 h-8 text-yemen-red" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"/>
+          </svg>
+        </div>
+        <h2 class="text-xl font-bold mb-2">عذراً، حدث خطأ</h2>
+        <p class="text-gray-400 mb-6" x-text="error"></p>
+        <button
+          @click="init()"
+          class="bg-yemen-green hover:bg-yemen-greenLight text-white px-6 py-2.5 rounded-xl transition-all duration-300 font-semibold"
+        >
+          إعادة المحاولة
+        </button>
+      </div>
+    </div>
+  </template>
+
+  <!-- Share Modal -->
+  <template x-if="showShareModal">
+    <div class="share-modal-overlay fixed inset-0 z-[60] flex items-center justify-center p-4" @click.self="closeShareModal()">
+      <div class="share-modal glass-strong rounded-3xl p-6 md:p-8 max-w-lg w-full relative" :class="{ 'bg-white/95': isLightMode }">
+        <!-- Close Button -->
+        <button
+          @click="closeShareModal()"
+          class="absolute top-4 left-4 w-8 h-8 rounded-full flex items-center justify-center transition-colors"
+          :class="isLightMode ? 'hover:bg-gray-100 text-gray-500' : 'hover:bg-white/10 text-gray-400'"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+
+        <!-- Modal Header -->
+        <div class="text-center mb-6">
+          <div class="w-14 h-14 rounded-full bg-yemen-green/20 flex items-center justify-center mx-auto mb-3">
+            <svg class="w-7 h-7 text-yemen-green" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
+          </div>
+          <h3 class="text-xl font-black" :class="isLightMode ? 'text-gray-900' : 'text-white'">مشاركة التغريدة</h3>
+          <p class="text-sm mt-1" :class="isLightMode ? 'text-gray-500' : 'text-gray-400'">راجع المحتوى وانشره على منصة X</p>
+        </div>
+
+        <!-- Tweet Preview Card -->
+        <div class="glass-card rounded-xl p-4 mb-5 text-right">
+          <div class="flex items-start gap-3">
+            <img src="/logo-dark.png" alt="" class="w-10 h-10 rounded-full object-cover border border-yemen-green/30 flex-shrink-0" onerror="this.style.display='none'">
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-bold" :class="isLightMode ? 'text-gray-900' : 'text-white'">لجنة اعتصام أبناء المهرة</p>
+              <p class="text-xs mb-2" :class="isLightMode ? 'text-gray-500' : 'text-gray-400'">@AlMahra_Sit_in</p>
+              <p class="text-sm leading-relaxed break-words whitespace-pre-wrap" :class="isLightMode ? 'text-gray-700' : 'text-gray-200'" x-text="getSharePreviewText(selectedTweet)"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Character Count -->
+        <div class="flex items-center justify-between mb-5">
+          <span class="text-xs" :class="isLightMode ? 'text-gray-500' : 'text-gray-500'">
+            <span x-text="selectedTweet?.text?.length || 0"></span> / 280 حرف
+          </span>
+          <span
+            class="text-xs px-2 py-1 rounded-full"
+            :class="(selectedTweet?.text?.length || 0) > 280 ? 'bg-yemen-red/20 text-yemen-red' : 'bg-yemen-green/20 text-yemen-green'"
+            x-text="(selectedTweet?.text?.length || 0) > 280 ? 'يتجاوز الحد' : 'ضمن الحد'"
+          ></span>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col gap-3">
+          <a
+            x-show="isPlatformEnabled('x')"
+            :href="getShareUrl(selectedTweet)"
+            target="_blank"
+            rel="noopener noreferrer"
+            @click="markAsShared(selectedTweet.id, 'x')"
+            class="btn-share w-full py-4 rounded-xl text-white font-black text-lg transition-all duration-300 flex items-center justify-center gap-3 hover:shadow-lg hover:shadow-yemen-green/30 no-underline text-center"
+          >
+            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+            </svg>
+            <span>شارك الآن على X</span>
+          </a>
+
+          <a
+            x-show="isPlatformEnabled('whatsapp')"
+            :href="getWhatsappShareUrl(selectedTweet)"
+            target="_blank"
+            rel="noopener noreferrer"
+            @click="markAsShared(selectedTweet.id, 'whatsapp')"
+            class="btn-share-whatsapp w-full py-4 rounded-xl text-white font-black text-lg transition-all duration-300 flex items-center justify-center gap-3 hover:shadow-lg no-underline text-center"
+          >
+            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+              <path d="M12.004 2.003c-5.514 0-9.997 4.483-9.997 9.997 0 1.762.462 3.479 1.34 4.997L2 22l5.126-1.345a9.965 9.965 0 004.878 1.242h.004c5.514 0 9.997-4.483 9.997-9.997 0-2.67-1.04-5.18-2.929-7.069a9.935 9.935 0 00-7.072-2.828zm5.883 15.86a8.28 8.28 0 01-4.877 1.567h-.003a8.26 8.26 0 01-4.213-1.152l-.302-.18-3.043.798.812-2.968-.198-.305a8.27 8.27 0 01-1.269-4.42c0-4.588 3.734-8.32 8.325-8.32a8.27 8.27 0 015.885 2.437 8.27 8.27 0 012.437 5.888c0 4.588-3.733 8.322-8.322 8.322z"/>
+            </svg>
+            <span>شارك الآن على واتساب</span>
+          </a>
+
+          <a
+            x-show="isPlatformEnabled('facebook')"
+            :href="getFacebookShareUrl(selectedTweet)"
+            target="_blank"
+            rel="noopener noreferrer"
+            @click="markAsShared(selectedTweet.id, 'facebook')"
+            class="btn-share-facebook w-full py-4 rounded-xl text-white font-black text-lg transition-all duration-300 flex items-center justify-center gap-3 hover:shadow-lg no-underline text-center"
+          >
+            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M22 12.06C22 6.505 17.523 2 12 2S2 6.505 2 12.06c0 5.022 3.657 9.184 8.438 9.94v-7.03H7.898v-2.91h2.54V9.845c0-2.522 1.492-3.915 3.777-3.915 1.094 0 2.238.196 2.238.196v2.475h-1.26c-1.242 0-1.63.775-1.63 1.57v1.888h2.773l-.443 2.91h-2.33V22c4.78-.756 8.437-4.918 8.437-9.94z"/>
+            </svg>
+            <span>شارك الآن على فيسبوك</span>
+          </a>
+
+          <button
+            @click="copyTweetText(getSharePreviewText(selectedTweet))"
+            class="w-full py-3 rounded-xl font-semibold text-sm transition-all duration-300 flex items-center justify-center gap-2 border"
+            :class="isLightMode ? 'border-gray-200 text-gray-600 hover:bg-gray-50' : 'border-white/10 text-gray-300 hover:bg-white/5'"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+            </svg>
+            <span x-text="copiedText ? 'تم النسخ!' : 'نسخ النص'"></span>
+          </button>
+        </div>
+
+        <!-- Security Note -->
+        <div class="mt-4 text-center">
+          <span class="security-badge" :class="isLightMode ? 'text-gray-400' : 'text-gray-600'">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+            اتصال آمن ومشفر
+          </span>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <!-- Main Content -->
+  <template x-if="!loading && !error">
+    <div class="relative z-10 min-h-screen flex flex-col">
+
+      <!-- Header -->
+      <header class="glass sticky top-0 z-40">
+        <div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="relative">
+              <img src="/logo-dark.png" alt="شعار السعودية سبب الفتن" class="w-14 h-14 md:w-16 md:h-16 rounded-full object-cover border-2 border-yemen-green/50 shadow-lg" onerror="this.style.display='none'">
+            </div>
+            <div class="hidden sm:block">
+              <h1 class="text-sm md:text-base font-bold leading-tight" :class="isLightMode ? 'text-gray-900' : 'text-white'" x-text="selectedCampaign ? selectedCampaign.campaignName : 'السعودية سبب الفتن'"></h1>
+              <p class="text-xs" :class="isLightMode ? 'text-gray-500' : 'text-gray-400'">الحملة الإلكترونية الموحدة</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button
+              @click="toggleTheme()"
+              class="theme-toggle w-10 h-10 rounded-full flex items-center justify-center"
+              :class="isLightMode ? 'bg-gray-100 text-amber-500 hover:bg-gray-200' : 'bg-white/10 text-yellow-400 hover:bg-white/20'"
+              :title="isLightMode ? 'الوضع الداكن' : 'الوضع الفاتح'"
+            >
+              <svg x-show="!isLightMode" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+              </svg>
+              <svg x-show="isLightMode" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+              </svg>
+            </button>
+
+            <div class="glass-strong px-3 py-1.5 rounded-full flex items-center gap-2" :class="isLive ? 'border-yemen-green/50' : 'border-white/10'">
+              <span class="w-2.5 h-2.5 rounded-full" :class="isLive ? 'bg-yemen-green animate-pulse-fast' : 'bg-gray-500'"></span>
+              <span class="text-xs font-semibold" :class="isLive ? 'text-yemen-greenLight' : (isLightMode ? 'text-gray-500' : 'text-gray-300')" x-text="isLive ? 'الحملة متاحة' : 'قيد العد التنازلي'"></span>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Hero Section -->
+      <main class="flex-1 flex flex-col items-center justify-center px-4 py-8 md:py-12">
+        <div class="max-w-3xl w-full">
+
+          <!-- CAMPAIGNS LIST VIEW -->
+          <div x-show="!selectedCampaign">
+            <div class="text-center mb-8 md:mb-10 animate-fade-in">
+              <div class="inline-flex items-center gap-2 glass px-4 py-2 rounded-full mb-4">
+                <span class="w-1.5 h-1.5 bg-yemen-red rounded-full"></span>
+                <span class="text-xs" :class="isLightMode ? 'text-gray-600' : 'text-gray-300'">الحملات المتاحة</span>
+              </div>
+              <h2 class="text-2xl sm:text-3xl md:text-4xl font-black leading-tight mb-3" :class="isLightMode ? 'text-gray-900' : 'text-white'">الحملات الإلكترونية</h2>
+              <p class="text-sm md:text-base max-w-lg mx-auto" :class="isLightMode ? 'text-gray-500' : 'text-gray-400'">اختر إحدى الحملات أدناه للمشاركة فيها</p>
+            </div>
+
+            <!-- No Campaigns Message -->
+            <div x-show="campaigns.length === 0" class="glass-strong rounded-3xl p-8 md:p-12 text-center animate-scale-in">
+              <div class="w-20 h-20 bg-gray-700/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-10 h-10 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                </svg>
+              </div>
+              <h3 class="text-xl font-bold mb-2" :class="isLightMode ? 'text-gray-900' : 'text-white'">لا توجد حملات حالياً</h3>
+              <p class="text-sm text-gray-400 mb-4">سيتم إضافة حملات جديدة قريباً. تفقد الصفحة لاحقاً.</p>
+              <button @click="init()" class="bg-yemen-green hover:bg-yemen-greenLight text-white px-6 py-2.5 rounded-xl transition-all font-semibold text-sm">تحديث الصفحة</button>
+            </div>
+
+            <!-- Campaigns Grid -->
+            <div class="space-y-4">
+              <template x-for="campaign in campaigns" :key="campaign.id">
+                <div @click="selectCampaign(campaign)" class="campaign-list-item glass-card rounded-xl p-5 md:p-6 cursor-pointer" :class="{ 'active': selectedCampaign?.id === campaign.id }">
+                  <div class="flex items-start gap-4">
+                    <div class="flex-shrink-0">
+                      <div class="w-14 h-14 rounded-full bg-yemen-green/20 flex items-center justify-center">
+                        <svg class="w-7 h-7 text-yemen-green" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/>
+                        </svg>
+                      </div>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                      <h3 class="text-lg font-bold mb-1" :class="isLightMode ? 'text-gray-900' : 'text-white'" x-text="campaign.campaignName"></h3>
+                      <div class="flex items-center gap-3 flex-wrap text-xs text-gray-500 mb-2">
+                        <span x-text="campaign.timezoneLabel"></span>
+                        <span x-show="campaign.targetTime" x-text="'إطلاق: ' + formatDate(campaign.targetTime)"></span>
+                        <span x-show="campaign.endTime" x-text="'انتهاء: ' + formatDate(campaign.endTime)"></span>
+                      </div>
+                      <div class="flex items-center gap-2">
+                        <span class="px-2 py-1 rounded-full text-xs font-bold" :class="campaign.isActive ? 'bg-yemen-green/20 text-yemen-greenLight border border-yemen-green/30' : 'bg-gray-700/30 text-gray-400 border border-gray-600/30'" x-text="campaign.isActive ? 'نشطة' : 'معطلة'"></span>
+                        <span class="text-xs text-gray-500 flex items-center gap-1">
+                          <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"/></svg>
+                          اضغط للمشاركة
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <!-- SINGLE CAMPAIGN VIEW -->
+          <div x-show="selectedCampaign">
+            <button @click="backToCampaigns()" class="text-xs text-gray-400 hover:text-white transition-colors flex items-center gap-1 mb-4">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+              العودة إلى الحملات
+            </button>
+
+            <!-- Campaign Header -->
+            <div class="text-center mb-8 animate-fade-in">
+              <div class="inline-flex items-center gap-2 glass px-4 py-2 rounded-full mb-4">
+                <span class="w-1.5 h-1.5 bg-yemen-red rounded-full"></span>
+                <span class="text-xs" :class="isLightMode ? 'text-gray-600' : 'text-gray-300'" x-text="selectedCampaign?.timezoneLabel"></span>
+              </div>
+              <h2 class="text-2xl sm:text-3xl md:text-4xl font-black leading-tight mb-3" :class="isLightMode ? 'text-gray-900' : 'text-white'" x-text="selectedCampaign?.campaignName"></h2>
+              <div x-show="selectedCampaign?.description" class="glass-card rounded-xl p-4 mb-4 text-center max-w-2xl mx-auto">
+                <p class="text-sm leading-relaxed whitespace-pre-wrap" :class="isLightMode ? 'text-gray-600' : 'text-gray-300'" x-text="selectedCampaign?.description"></p>
+              </div>
+            </div>
+
+            <!-- Countdown Timer Section -->
+            <template x-if="!isLive">
+              <div id="countdownSection" class="animate-fade-in" :class="{ 'animate-fade-out': transitioning }">
+                <div class="glass-strong rounded-3xl p-6 md:p-10 mb-8" :class="isLightMode ? 'shadow-lg shadow-gray-200/50' : ''">
+                  <p class="text-center text-sm mb-6" :class="isLightMode ? 'text-gray-500' : 'text-gray-300'">الوقت المتبقي للإطلاق</p>
+
+                  <div class="grid grid-cols-4 gap-3 md:gap-6">
+                    <div class="countdown-box rounded-2xl p-3 md:p-5 text-center">
+                      <div class="text-2xl sm:text-3xl md:text-5xl font-black mb-1 tabular-nums" :class="isLightMode ? 'text-gray-900' : 'text-white'" x-text="String(timeLeft.days).padStart(2, '0')"></div>
+                      <div class="text-xs" :class="isLightMode ? 'text-gray-500' : 'text-gray-400'">يوم</div>
+                    </div>
+                    <div class="countdown-box rounded-2xl p-3 md:p-5 text-center">
+                      <div class="text-2xl sm:text-3xl md:text-5xl font-black mb-1 tabular-nums" :class="isLightMode ? 'text-gray-900' : 'text-white'" x-text="String(timeLeft.hours).padStart(2, '0')"></div>
+                      <div class="text-xs" :class="isLightMode ? 'text-gray-500' : 'text-gray-400'">ساعة</div>
+                    </div>
+                    <div class="countdown-box rounded-2xl p-3 md:p-5 text-center">
+                      <div class="text-2xl sm:text-3xl md:text-5xl font-black mb-1 tabular-nums" :class="isLightMode ? 'text-gray-900' : 'text-white'" x-text="String(timeLeft.minutes).padStart(2, '0')"></div>
+                      <div class="text-xs" :class="isLightMode ? 'text-gray-500' : 'text-gray-400'">دقيقة</div>
+                    </div>
+                    <div class="countdown-box rounded-2xl p-3 md:p-5 text-center relative overflow-hidden">
+                      <div class="absolute inset-0 bg-gradient-to-b from-yemen-green/10 to-transparent pointer-events-none"></div>
+                      <div class="text-2xl sm:text-3xl md:text-5xl font-black text-yemen-greenLight mb-1 tabular-nums relative z-10" x-text="String(timeLeft.seconds).padStart(2, '0')"></div>
+                      <div class="text-xs relative z-10" :class="isLightMode ? 'text-gray-500' : 'text-gray-400'">ثانية</div>
+                    </div>
+                  </div>
+
+                  <div class="mt-6 md:mt-8">
+                    <div class="flex justify-between text-xs mb-2" :class="isLightMode ? 'text-gray-400' : 'text-gray-500'"><span>التقدم</span><span x-text="progressPercent + '%'"></span></div>
+                    <div class="h-2 rounded-full overflow-hidden" :class="isLightMode ? 'bg-gray-200' : 'bg-white/10'">
+                      <div class="h-full rounded-full transition-all duration-1000 ease-linear" :class="progressPercent > 90 ? 'bg-gradient-to-r from-yemen-green to-yemen-red' : 'bg-gradient-to-r from-yemen-green to-yemen-greenLight'" :style="'width: ' + progressPercent + '%'"></div>
+                    </div>
+                  </div>
+
+                  <div class="mt-4 text-center">
+                    <p class="text-xs" :class="isLightMode ? 'text-gray-400' : 'text-gray-500'">موعد الإطلاق: <span :class="isLightMode ? 'text-gray-700' : 'text-gray-300'" x-text="formatTargetTime()"></span></p>
+                  </div>
+
+                  <!-- Notification Button -->
+                  <div class="mt-4 text-center" x-show="!notificationEnabled && !isLive">
+                    <button
+                      @click="requestLaunchNotification()"
+                      class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 border"
+                      :class="isLightMode ? 'border-yemen-green/30 text-yemen-green hover:bg-yemen-green/10' : 'border-yemen-green/40 text-yemen-greenLight hover:bg-yemen-green/20'"
+                    >
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v1m6-10a1 1 0 11-2 0 1 1 0 012 0z"/>
+                      </svg>
+                      <span>تفعيل تنبيه الإطلاق</span>
+                    </button>
+                    <p class="text-xs mt-1.5" :class="isLightMode ? 'text-gray-400' : 'text-gray-500'">سنُعلمك بإشعار عند انطلاق الحملة</p>
+                  </div>
+
+                  <div class="mt-4 text-center" x-show="notificationEnabled && !isLive" x-transition>
+                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-yemen-green/10 border border-yemen-green/30">
+                      <span class="w-2 h-2 bg-yemen-green rounded-full animate-pulse"></span>
+                      <span class="text-xs font-bold text-yemen-greenLight">التنبيه مفعّل — سيتم إعلامك بالإطلاق</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </template>
+
+            <!-- Live Section -->
+            <template x-if="isLive || transitioning">
+              <div id="ctaSection" class="animate-scale-in">
+                <div class="glass-strong rounded-3xl p-6 md:p-10 border-yemen-green/30" :class="isLightMode ? 'shadow-xl shadow-yemen-green/10 border-yemen-green/20 bg-white/90' : ''">
+
+                  <!-- Live Badge -->
+                  <div class="text-center">
+                    <div class="inline-flex items-center gap-2 bg-yemen-green/20 border border-yemen-green/40 px-4 py-2 rounded-full mb-6">
+                      <span class="w-2.5 h-2.5 bg-yemen-green rounded-full animate-pulse-fast"></span>
+                      <span class="text-yemen-greenLight font-bold text-sm">الحملة الآن متاحة</span>
+                    </div>
+                  </div>
+
+                  <h3 class="text-2xl md:text-3xl font-black mb-3 text-center" :class="isLightMode ? 'text-gray-900' : 'text-white'">انضم الآن إلى الحملة</h3>
+                  <p class="text-sm md:text-base mb-8 max-w-md mx-auto text-center" :class="isLightMode ? 'text-gray-500' : 'text-gray-300'">الحملة قد انطلقت رسمياً. اختر إحدى التغريدات أدناه للمشاركة فوراً على منصة X.</p>
+
+                  <!-- Instructions -->
+                  <div class="mb-6">
+                    <button @click="showInstructions = !showInstructions" class="w-full flex items-center justify-between glass-card rounded-xl p-4 text-sm transition-all hover:bg-white/5" :class="isLightMode ? 'text-gray-900' : 'text-white'">
+                      <span class="flex items-center gap-2 font-bold">
+                        <svg class="w-4 h-4 text-yemen-green" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        تعليمات المشاركة
+                      </span>
+                      <svg class="w-4 h-4 transition-transform duration-300" :class="showInstructions ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+                    <div x-show="showInstructions" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform scale-y-0 origin-top" x-transition:enter-end="opacity-100 transform scale-y-100 origin-top" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="opacity-100 transform scale-y-100 origin-top" x-transition:leave-end="opacity-0 transform scale-y-0 origin-top" class="mt-2 glass-card rounded-xl p-4 text-right">
+                      <ul class="text-xs space-y-2 list-disc list-inside" :class="isLightMode ? 'text-gray-600' : 'text-gray-400'">
+                        <li>اضغط على زر <span class="text-yemen-green font-bold">"شارك الآن"</span> بجانب أي تغريدة</li>
+                        <li>سيتم فتح منصة X في نافذة جديدة مع النص جاهزاً للنشر</li>
+                        <li>يمكنك نسخ النص وإضافة هاشتاقات إضافية قبل النشر</li>
+                        <li>شارك في أكبر عدد ممكن من التغريدات لإنجاح الحملة</li>
+                      </ul>
+                    </div>
+                  </div>
+
+                  <!-- Tweets List -->
+                  <div class="mb-8">
+                    <div class="flex items-center justify-between mb-4">
+                      <h4 class="text-sm font-bold flex items-center gap-2" :class="isLightMode ? 'text-gray-900' : 'text-white'">
+                        <svg class="w-4 h-4 text-yemen-green" fill="currentColor" viewBox="0 0 24 24">
+                          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                        </svg>
+                        اختر تغريدة للمشاركة
+                        <span class="bg-yemen-green/20 text-yemen-greenLight text-xs px-2 py-0.5 rounded-full" x-text="tweets.length + ' تغريدة'"></span>
+                      </h4>
+                    </div>
+
+                    <div class="space-y-4 max-h-[32rem] overflow-y-auto pr-1">
+                      <template x-for="(tweet, index) in tweets" :key="tweet.id">
+                        <div class="tweet-card glass-card rounded-xl p-4 relative" :class="{ 'shared': isShared(tweet.id) }" :data-tweet-id="tweet.id">
+                          <div class="share-status participation-badge absolute top-3 left-3">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                            تمت المشاركة
+                          </div>
+                          <div class="flex items-start gap-3">
+                            <div class="flex-shrink-0">
+                              <div class="w-10 h-10 rounded-full bg-yemen-green/20 flex items-center justify-center">
+                                <span class="text-sm font-bold text-yemen-green" x-text="index + 1"></span>
+                              </div>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                              <p class="text-sm leading-relaxed break-words whitespace-pre-wrap" :class="isLightMode ? 'text-gray-700' : 'text-gray-200'" x-text="tweet.text"></p>
+                              <div class="flex items-center gap-3 mt-3 flex-wrap">
+                                <span class="text-xs" :class="isLightMode ? 'text-gray-400' : 'text-gray-500'" x-text="formatDate(tweet.created_at)"></span>
+                                <span class="text-xs" :class="isLightMode ? 'text-gray-300' : 'text-gray-700'">|</span>
+                                <span class="text-xs" :class="isLightMode ? 'text-gray-400' : 'text-gray-500'" x-text="tweet.text.length + ' حرف'"></span>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="mt-4 pt-4 border-t flex items-center gap-2 flex-wrap" :class="isLightMode ? 'border-gray-100' : 'border-white/5'">
+                            <a
+                              x-show="isPlatformEnabled('x')"
+                              :href="getShareUrl(tweet)"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              @click="markAsShared(tweet.id, 'x')"
+                              class="flex-1 sm:flex-none px-6 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 flex items-center justify-center gap-2 no-underline"
+                              :class="isShared(tweet.id) ?
+                                (isLightMode ? 'bg-yemen-green/10 text-yemen-green border border-yemen-green/30 hover:bg-yemen-green/20' : 'bg-yemen-green/20 text-yemen-greenLight border border-yemen-green/40 hover:bg-yemen-green/30') :
+                                'btn-share text-white hover:shadow-lg hover:shadow-yemen-green/30 hover:scale-[1.02] active:scale-95'
+                              "
+                            >
+                              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                              </svg>
+                              <span x-text="isShared(tweet.id) ? 'تمت المشاركة - شارك مرة أخرى' : 'شارك الآن'"></span>
+                            </a>
+
+                            <a
+                              x-show="isPlatformEnabled('whatsapp')"
+                              :href="getWhatsappShareUrl(tweet)"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              @click="markAsShared(tweet.id, 'whatsapp')"
+                              title="مشاركة عبر واتساب"
+                              class="btn-share-whatsapp w-10 h-10 rounded-xl text-white flex items-center justify-center transition-all duration-300 hover:scale-[1.05] active:scale-95 no-underline flex-shrink-0"
+                            >
+                              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+                                <path d="M12.004 2.003c-5.514 0-9.997 4.483-9.997 9.997 0 1.762.462 3.479 1.34 4.997L2 22l5.126-1.345a9.965 9.965 0 004.878 1.242h.004c5.514 0 9.997-4.483 9.997-9.997 0-2.67-1.04-5.18-2.929-7.069a9.935 9.935 0 00-7.072-2.828zm5.883 15.86a8.28 8.28 0 01-4.877 1.567h-.003a8.26 8.26 0 01-4.213-1.152l-.302-.18-3.043.798.812-2.968-.198-.305a8.27 8.27 0 01-1.269-4.42c0-4.588 3.734-8.32 8.325-8.32a8.27 8.27 0 015.885 2.437 8.27 8.27 0 012.437 5.888c0 4.588-3.733 8.322-8.322 8.322z"/>
+                              </svg>
+                            </a>
+
+                            <a
+                              x-show="isPlatformEnabled('facebook')"
+                              :href="getFacebookShareUrl(tweet)"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              @click="markAsShared(tweet.id, 'facebook')"
+                              title="مشاركة عبر فيسبوك"
+                              class="btn-share-facebook w-10 h-10 rounded-xl text-white flex items-center justify-center transition-all duration-300 hover:scale-[1.05] active:scale-95 no-underline flex-shrink-0"
+                            >
+                              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M22 12.06C22 6.505 17.523 2 12 2S2 6.505 2 12.06c0 5.022 3.657 9.184 8.438 9.94v-7.03H7.898v-2.91h2.54V9.845c0-2.522 1.492-3.915 3.777-3.915 1.094 0 2.238.196 2.238.196v2.475h-1.26c-1.242 0-1.63.775-1.63 1.57v1.888h2.773l-.443 2.91h-2.33V22c4.78-.756 8.437-4.918 8.437-9.94z"/>
+                              </svg>
+                            </a>
+                          </div>
+                        </div>
+                      </template>
+                    </div>
+
+                    <div x-show="tweets.length === 0" class="text-center py-8">
+                      <svg class="w-12 h-12 mx-auto mb-3" :class="isLightMode ? 'text-gray-300' : 'text-gray-600'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                      </svg>
+                      <p class="text-sm" :class="isLightMode ? 'text-gray-500' : 'text-gray-400'">لا توجد تغريدات متاحة حالياً</p>
+                    </div>
+                  </div>
+
+                  <div x-show="selectedCampaign?.videoUrl" class="mt-6">
+                    <div class="glass-card rounded-xl overflow-hidden media-container">
+                      <video :src="selectedCampaign?.videoUrl" controls class="w-full max-h-80 object-contain bg-black" poster="/logo-bg.jpg">متصفحك لا يدعم تشغيل الفيديو.</video>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </template>
+
+            <!-- Footer -->
+            <div class="mt-8 text-center">
+              <div class="flex items-center justify-center gap-4 mb-4">
+                <div class="h-px flex-1 max-w-[100px]" :class="isLightMode ? 'bg-gradient-to-l from-transparent to-gray-300' : 'bg-gradient-to-l from-transparent to-white/20'"></div>
+                <img src="/logo-dark.png" alt="" class="w-10 h-10 rounded-full opacity-60" onerror="this.style.display='none'">
+                <div class="h-px flex-1 max-w-[100px]" :class="isLightMode ? 'bg-gradient-to-r from-transparent to-gray-300' : 'bg-gradient-to-r from-transparent to-white/20'"></div>
+              </div>
+              <p class="text-xs" :class="isLightMode ? 'text-gray-400' : 'text-gray-600'">السعودية سبب الفتن &copy; 2026</p>
+              <div class="flex items-center justify-center gap-2 mt-2">
+                <span class="security-badge" :class="isLightMode ? 'text-gray-400' : 'text-gray-700'">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                  </svg>
+                  اتصال آمن ومشفر
+                </span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </main>
+    </div>
+  </template>
+
+  <!-- Application Logic -->
+  <script>
+    function campaignApp() {
+      return {
+        loading: true,
+        error: null,
+        campaigns: [],
+        selectedCampaign: null,
+        tweets: [],
+        selectedTweet: null,
+        showShareModal: false,
+        serverTime: null,
+        timeLeft: { days: 0, hours: 0, minutes: 0, seconds: 0 },
+        isLive: false,
+        transitioning: false,
+        progressPercent: 0,
+        timerInterval: null,
+        serverOffset: 0,
+        isLightMode: false,
+        sharedTweets: [],
+        copiedText: false,
+        showInstructions: false,
+        notificationEnabled: false,
+        notificationPermission: 'default',
+        notificationTimer: null,
+        notifiedOneMinute: false,
+        visitorId: null,
+        inviteCode: null,
+        // Defaults to all three on so this site behaves exactly as it does today when no
+        // site_settings row exists yet (Phase 1 ships with X + WhatsApp + Facebook all
+        // enabled); loadSiteConfig() below may narrow this per-tenant once Phase 2's
+        // dynamic identity system (site_settings / FR4) is populated for a given site.
+        enabledSharePlatforms: ['x', 'whatsapp', 'facebook'],
+
+        init() {
+          // Generate visitor ID for analytics
+          this.visitorId = this.getOrCreateVisitorId();
+          this.loadSiteConfig();
+
+          // Check URL params for campaign and invite
+          const urlParams = new URLSearchParams(window.location.search);
+          const campaignId = urlParams.get('campaign');
+          this.inviteCode = urlParams.get('invite');
+
+          // Track invite visit
+          if (this.inviteCode) {
+            this.trackEvent('invite_visit', null, this.inviteCode);
+          }
+
+          // Theme setup
+          const savedTheme = localStorage.getItem('theme');
+          if (savedTheme === 'light') { this.isLightMode = true; document.documentElement.classList.add('light'); }
+          else if (savedTheme === 'dark') { this.isLightMode = false; }
+          else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) { this.isLightMode = true; document.documentElement.classList.add('light'); }
+
+          // Load shared tweets
+          try {
+            const saved = localStorage.getItem('sharedTweets');
+            if (saved) this.sharedTweets = JSON.parse(saved);
+          } catch (e) { this.sharedTweets = []; }
+
+          // Load campaigns
+          this.loadCampaigns(campaignId);
+
+          // Track page view
+          this.trackEvent('page_view', null, this.inviteCode);
+        },
+
+        async loadSiteConfig() {
+          try {
+            const res = await fetch('/api/config');
+            const data = await res.json();
+            if (data.success && data.config && Array.isArray(data.config.enabledSharePlatforms)) {
+              this.enabledSharePlatforms = data.config.enabledSharePlatforms;
+            }
+          } catch (e) { /* keep defaults — page must work even if this endpoint is down */ }
+        },
+
+        getOrCreateVisitorId() {
+          let vid = localStorage.getItem('visitor_id');
+          if (!vid) {
+            vid = 'v_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+            localStorage.setItem('visitor_id', vid);
+          }
+          return vid;
+        },
+
+        async trackEvent(eventType, campaignId, inviteCode, platform) {
+          try {
+            await fetch('/api/analytics', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                eventType,
+                campaignId: campaignId || (this.selectedCampaign ? this.selectedCampaign.id : null),
+                inviteCode: inviteCode || this.inviteCode,
+                visitorId: this.visitorId,
+                platform: platform || null,
+                metadata: { url: window.location.href, referrer: document.referrer }
+              })
+            });
+          } catch (e) { /* silent fail */ }
+        },
+
+        async loadCampaigns(autoSelectId) {
+          this.loading = true; this.error = null;
+          try {
+            const response = await fetch('/api/campaign');
+            if (!response.ok) throw new Error('Server returned ' + response.status);
+            const data = await response.json();
+            if (!data.success) throw new Error(data.error || 'Failed to load');
+            this.campaigns = data.campaigns || [];
+            this.serverTime = new Date(data.serverTime);
+            this.serverOffset = this.serverTime - new Date();
+            this.loading = false;
+
+            // Auto-select campaign from URL
+            if (autoSelectId && this.campaigns.length > 0) {
+              const campaign = this.campaigns.find(c => String(c.id) === String(autoSelectId));
+              if (campaign) {
+                this.selectCampaign(campaign);
+              }
+            }
+          } catch (err) {
+            this.loading = false;
+            this.error = 'تعذر الاتصال بالخادم. يرجى التحقق من اتصال الإنترنت والمحاولة مرة أخرى.';
+            console.error('Init error:', err);
+          }
+        },
+
+        async selectCampaign(campaign) {
+          this.selectedCampaign = campaign;
+          this.loading = true;
+          document.title = campaign.campaignName;
+
+          // Update URL without reload
+          const url = new URL(window.location);
+          url.searchParams.set('campaign', campaign.id);
+          window.history.pushState({}, '', url);
+
+          try {
+            const response = await fetch('/api/campaign?id=' + campaign.id);
+            const data = await response.json();
+            if (data.success) {
+              this.tweets = data.tweets || [];
+              this.selectedCampaign = data.campaign;
+              this.loading = false;
+              this.startCountdown();
+
+              // Track campaign view
+              this.trackEvent('campaign_view', campaign.id, this.inviteCode);
+            } else { throw new Error(data.error); }
+          } catch (err) {
+            this.loading = false;
+            this.error = 'تعذر تحميل تفاصيل الحملة';
+          }
+        },
+
+        backToCampaigns() {
+          this.selectedCampaign = null;
+          this.isLive = false;
+          this.transitioning = false;
+          if (this.timerInterval) clearInterval(this.timerInterval);
+          document.title = 'السعودية سبب الفتن';
+
+          // Update URL
+          const url = new URL(window.location);
+          url.searchParams.delete('campaign');
+          window.history.pushState({}, '', url);
+        },
+
+        toggleTheme() {
+          this.isLightMode = !this.isLightMode;
+          if (this.isLightMode) { document.documentElement.classList.add('light'); localStorage.setItem('theme', 'light'); }
+          else { document.documentElement.classList.remove('light'); localStorage.setItem('theme', 'dark'); }
+        },
+
+        startCountdown() {
+          this.updateCountdown();
+          this.timerInterval = setInterval(() => { this.updateCountdown(); }, 1000);
+        },
+
+        updateCountdown() {
+          if (!this.selectedCampaign) return;
+          const now = new Date(Date.now() + this.serverOffset);
+          const target = new Date(this.selectedCampaign.targetTime);
+          const diff = target - now;
+          if (diff <= 0) {
+            this.timeLeft = { days: 0, hours: 0, minutes: 0, seconds: 0 };
+            this.progressPercent = 100;
+            if (!this.isLive && !this.transitioning) this.transitionToLive();
+            return;
+          }
+          const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+          const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+          this.timeLeft = { days, hours, minutes, seconds };
+          const totalDuration = 30 * 24 * 60 * 60 * 1000;
+          const elapsed = totalDuration - Math.min(diff, totalDuration);
+          this.progressPercent = Math.max(0, Math.min(100, (elapsed / totalDuration) * 100));
+        },
+
+        transitionToLive() {
+          this.transitioning = true;
+          setTimeout(() => { this.isLive = true; this.transitioning = false; if (this.timerInterval) clearInterval(this.timerInterval); }, 600);
+        },
+
+        isShared(tweetId) { return this.sharedTweets.includes(String(tweetId)); },
+        markAsShared(tweetId, platform) {
+          const id = String(tweetId);
+          if (!this.sharedTweets.includes(id)) {
+            this.sharedTweets.push(id);
+            localStorage.setItem('sharedTweets', JSON.stringify(this.sharedTweets));
+          }
+          // Track share click, attributed to the platform the visitor actually used
+          // (x / whatsapp / facebook) so the admin analytics tab can compare performance.
+          this.trackEvent('tweet_share_click', this.selectedCampaign ? this.selectedCampaign.id : null, this.inviteCode, platform || 'x');
+        },
+        getParticipationCount() { return this.sharedTweets.length; },
+
+        openShareModal(tweet) {
+          this.selectedTweet = tweet;
+          this.showShareModal = true;
+          this.copiedText = false;
+          document.body.style.overflow = 'hidden';
+        },
+        closeShareModal() { this.showShareModal = false; this.selectedTweet = null; document.body.style.overflow = ''; },
+
+        isVideoMedia(url) {
+          if (!url) return false;
+          const exts = ['.mp4', '.webm', '.ogg', '.mov', '.m4v'];
+          const lower = url.toLowerCase();
+          return exts.some(e => lower.includes(e)) || lower.includes('video') || lower.includes('stream');
+        },
+
+        getShareUrl(tweet) {
+          if (!tweet) return '#';
+          let text = tweet.text || '';
+          if (this.selectedCampaign && this.selectedCampaign.hashtag) {
+            text += '\n' + this.selectedCampaign.hashtag;
+          }
+          if (tweet.media_url) {
+            text += '\n' + tweet.media_url + '/video/1';
+          }
+          return 'https://x.com/intent/tweet?text=' + encodeURIComponent(text)
+            .replace(/[!'()*]/g, (c) => '%' + c.charCodeAt(0).toString(16).toUpperCase())
+            .replace(/%20/g, '+');
+        },
+
+        // WhatsApp's share intent takes the full message as plain text — no separate
+        // link parameter — so it reuses the exact same preview text as X/copy.
+        getWhatsappShareUrl(tweet) {
+          if (!tweet) return '#';
+          return 'https://wa.me/?text=' + encodeURIComponent(this.getSharePreviewText(tweet));
+        },
+
+        // Facebook's sharer only reliably reads Open Graph tags from the URL itself (the
+        // quote param is not guaranteed to render — see PRD §FR5), so this links to the
+        // page and relies on the og:title/og:description/og:image tags in <head>.
+        getFacebookShareUrl(tweet) {
+          return 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(window.location.origin + window.location.pathname + window.location.search);
+        },
+
+        isPlatformEnabled(platform) {
+          return this.enabledSharePlatforms.includes(platform);
+        },
+
+        getSharePreviewText(tweet) {
+          if (!tweet) return '';
+          let text = tweet.text || '';
+          if (this.selectedCampaign && this.selectedCampaign.hashtag) {
+            text += '\n' + this.selectedCampaign.hashtag;
+          }
+          if (tweet.media_url) {
+            text += '\n' + tweet.media_url + '/video/1';
+          }
+          return text;
+        },
+
+        async copyTweetText(text) {
+          if (!text) return;
+          try { await navigator.clipboard.writeText(text); this.copiedText = true; }
+          catch (err) {
+            const textarea = document.createElement('textarea'); textarea.value = text;
+            document.body.appendChild(textarea); textarea.select(); document.execCommand('copy'); document.body.removeChild(textarea);
+            this.copiedText = true;
+          }
+          // Track copy
+          this.trackEvent('tweet_copy', this.selectedCampaign ? this.selectedCampaign.id : null, this.inviteCode);
+          setTimeout(() => { this.copiedText = false; }, 2000);
+        },
+
+        formatTargetTime() {
+          if (!this.selectedCampaign?.targetTime) return '';
+          return new Date(this.selectedCampaign.targetTime).toLocaleString('ar-SA', {
+            year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit',
+            timeZone: this.selectedCampaign.targetTimezone || 'Asia/Riyadh'
+          });
+        },
+
+        formatDate(isoString) {
+          if (!isoString) return '';
+          try { return new Date(isoString).toLocaleString('ar-SA', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }); }
+          catch { return isoString; }
+        },
+
+        requestLaunchNotification() {
+          if (!('Notification' in window)) {
+            alert('المتصفح لا يدعم الإشعارات. يرجى استخدام متصفح حديث (Chrome, Edge, Safari).');
+            return;
+          }
+          Notification.requestPermission().then(permission => {
+            this.notificationPermission = permission;
+            if (permission === 'granted') {
+              this.notificationEnabled = true;
+              localStorage.setItem('campaignNotification_' + this.selectedCampaign.id, 'true');
+              this.startNotificationCheck();
+              setTimeout(() => {
+                new Notification('✅ التنبيه مفعّل', {
+                  body: 'سنُعلمك فوراً عند انطلاق الحملة',
+                  icon: '/logo-dark.png',
+                  tag: 'campaign-confirm-' + this.selectedCampaign.id,
+                  requireInteraction: false
+                });
+              }, 500);
+            } else if (permission === 'denied') {
+              alert('تم رفض الإذن. يمكنك تفعيل الإشعارات من إعدادات المتصفح ثم المحاولة مرة أخرى.');
+            } else {
+              alert('لم يتم منح الإذن. يرجى الضغط على "سماح" عند الطلب.');
+            }
+          });
+        },
+
+        startNotificationCheck() {
+          if (this.notificationTimer) clearInterval(this.notificationTimer);
+          const checkAndNotify = () => {
+            if (!this.selectedCampaign || this.isLive) {
+              clearInterval(this.notificationTimer);
+              localStorage.removeItem('campaignNotification_' + this.selectedCampaign.id);
+              return;
+            }
+            const now = new Date(Date.now() + this.serverOffset);
+            const target = new Date(this.selectedCampaign.targetTime);
+            const diff = target - now;
+            if (diff <= 60000 && diff > 0 && !this.notifiedOneMinute) {
+              this.notifiedOneMinute = true;
+              new Notification('⏰ الحملة تبدأ خلال دقيقة!', {
+                body: 'استعد للمشاركة في "' + this.selectedCampaign.campaignName + '"',
+                icon: '/logo-dark.png',
+                badge: '/logo-dark.png',
+                tag: 'campaign-1min-' + this.selectedCampaign.id,
+                requireInteraction: true
+              });
+            }
+            if (diff <= 0 && !this.isLive) {
+              this.isLive = true;
+              clearInterval(this.notificationTimer);
+              localStorage.removeItem('campaignNotification_' + this.selectedCampaign.id);
+              new Notification('🚀 انطلقت الحملة الآن!', {
+                body: 'الحملة "' + this.selectedCampaign.campaignName + '" متاحة للمشاركة.',
+                icon: '/logo-dark.png',
+                badge: '/logo-dark.png',
+                tag: 'campaign-launch-' + this.selectedCampaign.id,
+                requireInteraction: true
+              });
+            }
+          };
+          checkAndNotify();
+          this.notificationTimer = setInterval(checkAndNotify, 5000);
+        }
+      }
+    }
+  </script>
+</body>
+</html>

@@ -335,9 +335,11 @@ async function launchTenantFactory() {
     const tenantPayload = {
       orgName, slug, description: $('wDesc').value.trim(), hashtag: $('wHashtag').value.trim(),
       primaryColor: $('wColorPrimaryHex').value, secondaryColor: $('wColorSecondaryHex').value,
-      themeMode: $('wTheme').value, logoUrl: $('wLogo').value,
+      themeMode: $('wTheme').value,
       enabledSharePlatforms: [$('wPlatX').checked ? 'x' : null, $('wPlatWa').checked ? 'whatsapp' : null, $('wPlatFb').checked ? 'facebook' : null, $('wPlatTg').checked ? 'telegram' : null].filter(Boolean)
     };
+    const logoUrl = $('wLogo').value.trim();
+    if (logoUrl) tenantPayload.logoUrl = logoUrl;
     const res = await factoryApi.post('/tenants', tenantPayload);
     const tenant = res.tenant;
     const initJob = await factoryApi.post('/provision/start', { tenantId: tenant.id, adminUsername, adminPassword });

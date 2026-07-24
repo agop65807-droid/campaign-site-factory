@@ -1,7 +1,7 @@
 const {
   hashToken,
   generateToken,
-  verifyPassword,
+  verifyPasswordAsync,
   encrypt,
   decrypt,
   generateSlug
@@ -59,7 +59,8 @@ async function readJSON(req, limit = 100000) {
 }
 
 function getIp(req) {
-  return req.headers['x-forwarded-for'] || req.socket?.remoteAddress || 'unknown';
+  const forwarded = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim();
+  return (forwarded || req.socket?.remoteAddress || 'unknown').slice(0, 64);
 }
 
 function getUserAgent(req) {
@@ -159,7 +160,7 @@ async function handleLogin(req, res) {
     return send(res, 423, { error: 'Account temporarily locked' });
   }
 
-  const passwordOk = verifyPassword(password, admin.password_hash, admin.password_salt);
+  const passwordOk = await verifyPasswordAsync(password, admin.password_hash, admin.password_salt);
 
   if (!passwordOk) {
     const attempts = (admin.failed_login_attempts || 0) + 1;
@@ -338,7 +339,7 @@ async function handleTenants(req, res) {
   if (req.method === 'GET') {
     const { data: tenants } = await db
       .from('tenants')
-      .select('*')
+      .select('id, org_name, slug, status, description, hashtag, logo_url, favicon_url, primary_color, secondary_color, theme_mode, enabled_share_platforms, base_domain, primary_domain, vercel_project_id, vercel_url, supabase_project_ref, supabase_project_url, region, custom_domain, subdomain, created_at, updated_at')
       .order('created_at', { ascending: false });
 
     return send(res, 200, { success: true, tenants: tenants || [] });
@@ -736,7 +737,14 @@ async function handleLogs(req, res) {
 
 module.exports = async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
-  const path = url.pathname.replace(/^\/api\/factory/, '') || '/';
+  let path = url.pathname;
+  if (path.startsWith('/api/factory')) {
+    path = path.slice('/api/factory'.length);
+  } else if (path.startsWith('/factory')) {
+    path = path.slice('/factory'.length);
+  }
+  path = path.replace(/\/+$/, '');
+  if (!path) path = '/';
 
   if (req.method === 'OPTIONS') {
     res.writeHead(204, securityHeaders);

@@ -1,8 +1,20 @@
 /* Shared API helper — token-aware fetch wrapper */
 function createApi(storageKey, base = '') {
   return {
-    getToken() { return localStorage.getItem(storageKey); },
-    setToken(t) { t ? localStorage.setItem(storageKey, t) : localStorage.removeItem(storageKey); },
+    getToken() {
+      const token = sessionStorage.getItem(storageKey);
+      const legacyToken = localStorage.getItem(storageKey);
+      if (!token && legacyToken) {
+        sessionStorage.setItem(storageKey, legacyToken);
+        localStorage.removeItem(storageKey);
+        return legacyToken;
+      }
+      return token;
+    },
+    setToken(t) {
+      localStorage.removeItem(storageKey);
+      t ? sessionStorage.setItem(storageKey, t) : sessionStorage.removeItem(storageKey);
+    },
     async request(path, { method = 'GET', body, auth = true, raw = false } = {}) {
       const headers = {};
       if (body && !(body instanceof FormData)) headers['Content-Type'] = 'application/json';

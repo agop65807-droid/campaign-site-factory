@@ -15,8 +15,6 @@ const state = {
   pendingMustChange: false
 };
 
-const $ = (id) => document.getElementById(id);
-
 function hasPerm(perm) {
   if (!state.user) return false;
   if (state.user.adminType === 'main') return true;

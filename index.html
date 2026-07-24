@@ -12,6 +12,15 @@
   <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/api/config.css" />
   <link rel="stylesheet" href="/assets/app.css" />
+  <script>
+    (function() {
+      var host = window.location.hostname.toLowerCase();
+      var isFactoryHost = host === 'campaign-site-factory.vercel.app' || host.startsWith('factory.') || host === 'localhost' || host === '127.0.0.1';
+      if (!isFactoryHost && (window.location.pathname === '/' || window.location.pathname === '/index.html')) {
+        window.location.replace('/campaign');
+      }
+    })();
+  </script>
   <script src="/assets/js/api.js" defer></script>
   <script src="/assets/js/factory.js" defer></script>
 </head>

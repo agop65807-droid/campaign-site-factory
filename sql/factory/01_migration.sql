@@ -252,3 +252,37 @@ begin
   end if;
 end;
 $$;
+
+-- ============================================================
+-- Security Hardening & RLS Enablement
+-- ============================================================
+drop function if exists exec_sql(text);
+drop function if exists exec_sql(text, jsonb);
+
+alter table factory_settings enable row level security;
+alter table super_admins enable row level security;
+alter table tenants enable row level security;
+alter table tenant_domains enable row level security;
+alter table super_admin_sessions enable row level security;
+alter table provisioning_jobs enable row level security;
+alter table factory_activity_logs enable row level security;
+alter table secrets_vault enable row level security;
+alter table rate_limits enable row level security;
+
+-- Revoke public execution of security definer functions
+revoke execute on all functions in schema public from public, anon, authenticated;
+grant execute on function factory_check_rate_limit(text, integer, integer) to service_role;
+
+revoke usage on schema public from public, anon, authenticated;
+revoke all privileges on all tables in schema public from public, anon, authenticated;
+revoke all privileges on all sequences in schema public from public, anon, authenticated;
+grant usage on schema public to service_role;
+grant all privileges on all tables in schema public to service_role;
+grant all privileges on all sequences in schema public to service_role;
+
+alter default privileges for role postgres in schema public
+  revoke all privileges on tables from public, anon, authenticated;
+alter default privileges for role postgres in schema public
+  revoke all privileges on sequences from public, anon, authenticated;
+alter default privileges for role postgres in schema public
+  revoke execute on functions from public, anon, authenticated;

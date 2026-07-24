@@ -104,6 +104,7 @@ function showSection(sectionName) {
 
 async function loadDashboardData() {
   const container = $('dashboardCards');
+  if (!container) return;
   container.innerHTML = Array(4).fill('<div class="card skeleton" style="height:90px"></div>').join('');
   try {
     const data = await factoryApi.get('/tenants');
@@ -118,6 +119,7 @@ async function loadDashboardData() {
 
 function renderRecentTenants(tenants) {
   const tbody = $('recentTenantsTbody');
+  if (!tbody) return;
   tbody.innerHTML = '';
   if (!tenants.length) { tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">لا توجد جهات</td></tr>'; return; }
   tenants.forEach(t => {
@@ -129,6 +131,7 @@ function renderRecentTenants(tenants) {
 
 async function loadTenants() {
   const tbody = $('tenantsTbody');
+  if (!tbody) return;
   tbody.innerHTML = '<tr><td colspan="5"><div class="skeleton" style="height:50px"></div></td></tr>';
   try {
     const data = await factoryApi.get('/tenants');
@@ -139,12 +142,15 @@ async function loadTenants() {
 
 function renderTenantsList() {
   const tbody = $('tenantsTbody');
+  if (!tbody) return;
   tbody.innerHTML = '';
   if (!factoryState.tenants.length) { tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">لا توجد جهات</td></tr>'; return; }
   factoryState.tenants.forEach(t => {
     const tr = document.createElement('tr');
-    const mainUrl = t.vercel_url || 'https://' + t.slug + '.vercel.app';
-    tr.innerHTML = '<td><span class="font-bold">' + esc(t.org_name) + '</span></td><td><span class="kbd text-xs" dir="ltr">' + esc(t.slug) + '</span></td><td><span class="badge ' + (t.status === 'active' ? 'badge-success' : t.status === 'suspended' ? 'badge-danger' : 'badge-warning') + '">' + esc(t.status) + '</span></td><td><div class="flex gap-2"><a class="btn btn-ghost btn-sm" href="' + mainUrl + '" target="_blank">رئيسية</a><a class="btn btn-ghost btn-sm" href="' + mainUrl + '/admin" target="_blank">إدارة</a></div></td><td><button class="btn btn-primary btn-sm" data-act="view" data-id="' + t.id + '">التفاصيل</button></td>';
+    const siteBase = t.primary_domain ? `https://${t.primary_domain}` : (t.vercel_url || 'https://' + t.slug + '.vercel.app');
+    const campaignUrl = siteBase + '/campaign';
+    const adminUrl = siteBase + '/admin';
+    tr.innerHTML = '<td><span class="font-bold">' + esc(t.org_name) + '</span></td><td><span class="kbd text-xs" dir="ltr">' + esc(t.slug) + '</span></td><td><span class="badge ' + (t.status === 'active' ? 'badge-success' : t.status === 'suspended' ? 'badge-danger' : 'badge-warning') + '">' + esc(t.status) + '</span></td><td><div class="flex gap-2"><a class="btn btn-ghost btn-sm" href="' + campaignUrl + '" target="_blank">رئيسية</a><a class="btn btn-ghost btn-sm" href="' + adminUrl + '" target="_blank">إدارة</a></div></td><td><button class="btn btn-primary btn-sm" data-act="view" data-id="' + t.id + '">التفاصيل</button></td>';
     tr.querySelector('[data-act="view"]').addEventListener('click', () => viewTenantDetail(t.id));
     tbody.appendChild(tr);
   });
@@ -160,11 +166,13 @@ async function viewTenantDetail(id) {
     document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
     $('sec-tenant-detail').classList.remove('hidden');
     $('dtOrgName').textContent = 'إدارة: ' + tenant.org_name;
-    const mainUrl = tenant.vercel_url || 'https://' + tenant.slug + '.vercel.app';
-    $('dtSiteUrl').href = mainUrl;
-    $('dtSiteUrl').textContent = mainUrl;
-    $('dtAdminUrl').href = mainUrl + '/admin';
-    $('dtAdminUrl').textContent = mainUrl + '/admin';
+    const siteBase = tenant.primary_domain ? `https://${tenant.primary_domain}` : (tenant.vercel_url || 'https://' + tenant.slug + '.vercel.app');
+    const campaignUrl = siteBase + '/campaign';
+    const adminUrl = siteBase + '/admin';
+    $('dtSiteUrl').href = campaignUrl;
+    $('dtSiteUrl').textContent = campaignUrl;
+    $('dtAdminUrl').href = adminUrl;
+    $('dtAdminUrl').textContent = adminUrl;
     const statusBadge = $('dtStatusBadge');
     statusBadge.textContent = tenant.status;
     statusBadge.className = 'badge ' + (tenant.status === 'active' ? 'badge-success' : 'badge-warning');
@@ -192,6 +200,7 @@ async function deleteTenant(id) {
 
 function renderTenantDomains() {
   const tbody = $('domainsTbody');
+  if (!tbody) return;
   tbody.innerHTML = '';
   if (!factoryState.selectedTenantDomains.length) { tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted">لا توجد نطاقات</td></tr>'; return; }
   factoryState.selectedTenantDomains.forEach(d => {
@@ -212,8 +221,8 @@ async function addHostname() {
     $('newHostname').value = '';
     const recWrap = $('dnsRecommendation');
     const recData = $('dnsRecData');
-    recWrap.classList.remove('hidden');
-    recData.textContent = JSON.stringify(data.dns.recommended, null, 2);
+    if (recWrap) recWrap.classList.remove('hidden');
+    if (recData) recData.textContent = JSON.stringify(data.dns.recommended, null, 2);
     showToast('تمت إضافة النطاق', 'success');
     viewTenantDetail(factoryState.selectedTenant.id);
   } catch (e) { showToast(e.message, 'error'); }
@@ -227,6 +236,7 @@ async function removeDomain(domainId) {
 
 function renderTenantProvisionJobs() {
   const tbody = $('jobsTbody');
+  if (!tbody) return;
   tbody.innerHTML = '';
   if (!factoryState.selectedTenantJobs.length) { tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted">لا يوجد سجل</td></tr>'; return; }
   factoryState.selectedTenantJobs.forEach(j => {
@@ -239,10 +249,10 @@ function renderTenantProvisionJobs() {
 function initWizardForm() {
   factoryState.activeWizardStep = 1;
   wizardGo(1);
-  $('wizardForm').reset();
-  $('wizardProvisioningLogs').classList.add('hidden');
-  $('wizardButtons').classList.remove('hidden');
-  $('wizardError').classList.add('hidden');
+  if ($('wizardForm')) $('wizardForm').reset();
+  if ($('wizardProvisioningLogs')) $('wizardProvisioningLogs').classList.add('hidden');
+  if ($('wizardButtons')) $('wizardButtons').classList.remove('hidden');
+  if ($('wizardError')) $('wizardError').classList.add('hidden');
 }
 
 function wizardGo(step) {
@@ -255,9 +265,9 @@ function wizardGo(step) {
     wp.classList.toggle('active', i + 1 === step);
   });
   if (step === 4) {
-    $('cOrgName').textContent = $('wName').value;
-    $('cSlug').textContent = $('wSlug').value || generateSlug($('wName').value);
-    $('cAdminUser').textContent = $('wAdminUser').value;
+    if ($('cOrgName')) $('cOrgName').textContent = $('wName').value;
+    if ($('cSlug')) $('cSlug').textContent = $('wSlug').value || generateSlug($('wName').value);
+    if ($('cAdminUser')) $('cAdminUser').textContent = $('wAdminUser').value;
   }
 }
 
@@ -265,8 +275,10 @@ function generateRandomPass() {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^*';
   let str = '';
   for (let i = 0; i < 12; i++) str += chars.charAt(Math.floor(Math.random() * chars.length));
-  $('wAdminPass').value = str;
-  $('wAdminPass').type = 'text';
+  if ($('wAdminPass')) {
+    $('wAdminPass').value = str;
+    $('wAdminPass').type = 'text';
+  }
   showToast('تم توليد كلمة مرور', 'success');
 }
 
@@ -280,9 +292,9 @@ async function launchTenantFactory() {
   const adminUsername = $('wAdminUser').value.trim();
   const adminPassword = $('wAdminPass').value;
   if (!orgName || !adminUsername || !adminPassword) { showToast('املأ الحقول المطلوبة', 'error'); return; }
-  $('wizardError').classList.add('hidden');
-  $('wizardButtons').classList.add('hidden');
-  $('wizardProvisioningLogs').classList.remove('hidden');
+  if ($('wizardError')) $('wizardError').classList.add('hidden');
+  if ($('wizardButtons')) $('wizardButtons').classList.add('hidden');
+  if ($('wizardProvisioningLogs')) $('wizardProvisioningLogs').classList.remove('hidden');
   try {
     const tenantPayload = {
       orgName, slug, description: $('wDesc').value.trim(), hashtag: $('wHashtag').value.trim(),
@@ -317,24 +329,29 @@ function updateWizardProgress(step, progress) {
     'add_domains': 'إعداد النطاقات...', 'health_check': 'فحص الصحة...',
     'completed': 'اكتمل التزويد بنجاح!'
   };
-  $('wizardStepLabel').textContent = labels[step] || 'جاري المعالجة...';
-  $('wizardProgressPct').textContent = progress + '%';
-  $('wizardProgressFill').style.width = progress + '%';
+  if ($('wizardStepLabel')) $('wizardStepLabel').textContent = labels[step] || 'جاري المعالجة...';
+  if ($('wizardProgressPct')) $('wizardProgressPct').textContent = progress + '%';
+  if ($('wizardProgressFill')) $('wizardProgressFill').style.width = progress + '%';
   const list = $('wizardStepsStatus');
-  const dot = document.createElement('div');
-  dot.className = 'step-progress';
-  dot.innerHTML = '<div class="step-dot done">✓</div><span>' + (labels[step] || step) + ' (' + progress + '%)</span>';
-  list.appendChild(dot);
+  if (list) {
+    const dot = document.createElement('div');
+    dot.className = 'step-progress';
+    dot.innerHTML = '<div class="step-dot done">✓</div><span>' + (labels[step] || step) + ' (' + progress + '%)</span>';
+    list.appendChild(dot);
+  }
 }
 
 function showWizardError(msg) {
-  $('wizardError').textContent = 'خطأ: ' + msg;
-  $('wizardError').classList.remove('hidden');
-  $('wizardButtons').classList.remove('hidden');
+  if ($('wizardError')) {
+    $('wizardError').textContent = 'خطأ: ' + msg;
+    $('wizardError').classList.remove('hidden');
+  }
+  if ($('wizardButtons')) $('wizardButtons').classList.remove('hidden');
 }
 
 async function loadAuditLogs() {
   const tbody = $('logsTbody');
+  if (!tbody) return;
   tbody.innerHTML = '<tr><td colspan="6"><div class="skeleton" style="height:45px"></div></td></tr>';
   try {
     const data = await factoryApi.get('/logs');
@@ -351,18 +368,22 @@ async function loadAuditLogs() {
 }
 
 function bindEvents() {
-  $('loginForm').addEventListener('submit', handleLogin);
-  $('enrollVerifyBtn').addEventListener('click', handleVerifyEnroll);
-  $('logoutBtn').addEventListener('click', handleLogout);
-  $('btnAddHostname').addEventListener('click', addHostname);
-  $('btnLaunchFactory').addEventListener('click', launchTenantFactory);
+  if ($('loginForm')) $('loginForm').addEventListener('submit', handleLogin);
+  if ($('enrollVerifyBtn')) $('enrollVerifyBtn').addEventListener('click', handleVerifyEnroll);
+  if ($('logoutBtn')) $('logoutBtn').addEventListener('click', handleLogout);
+  if ($('btnAddHostname')) $('btnAddHostname').addEventListener('click', addHostname);
+  if ($('btnLaunchFactory')) $('btnLaunchFactory').addEventListener('click', launchTenantFactory);
   document.querySelectorAll('.nav-item[data-section]').forEach(btn => {
     btn.addEventListener('click', () => showSection(btn.dataset.section));
   });
-  $('wColorPrimary').addEventListener('input', (e) => { $('wColorPrimaryHex').value = e.target.value; });
-  $('wColorPrimaryHex').addEventListener('input', (e) => { if (/^#[0-9A-Fa-f]{6}$/.test(e.target.value)) $('wColorPrimary').value = e.target.value; });
-  $('wColorSecondary').addEventListener('input', (e) => { $('wColorSecondaryHex').value = e.target.value; });
-  $('wColorSecondaryHex').addEventListener('input', (e) => { if (/^#[0-9A-Fa-f]{6}$/.test(e.target.value)) $('wColorSecondary').value = e.target.value; });
+  if ($('wColorPrimary') && $('wColorPrimaryHex')) {
+    $('wColorPrimary').addEventListener('input', (e) => { $('wColorPrimaryHex').value = e.target.value; });
+    $('wColorPrimaryHex').addEventListener('input', (e) => { if (/^#[0-9A-Fa-f]{6}$/.test(e.target.value)) $('wColorPrimary').value = e.target.value; });
+  }
+  if ($('wColorSecondary') && $('wColorSecondaryHex')) {
+    $('wColorSecondary').addEventListener('input', (e) => { $('wColorSecondaryHex').value = e.target.value; });
+    $('wColorSecondaryHex').addEventListener('input', (e) => { if (/^#[0-9A-Fa-f]{6}$/.test(e.target.value)) $('wColorSecondary').value = e.target.value; });
+  }
 
   const btnBack = $('btnBackToTenants');
   if (btnBack) btnBack.addEventListener('click', () => showSection('tenants'));

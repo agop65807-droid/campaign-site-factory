@@ -1,13 +1,17 @@
 const { tenantClient } = require('../lib/supabase');
+const { resolveTenant } = require('../lib/tenant-resolver');
 
 module.exports = async (req, res) => {
   let cfg = {};
   try {
-    const { data } = await tenantClient()
+    const context = await resolveTenant(req);
+    if (!context.tenant) throw new Error('Tenant context is unresolved');
+    let query = tenantClient()
       .from('site_settings')
       .select('*')
-      .limit(1)
-      .single();
+      .limit(1);
+    if (context.tenantId) query = query.eq('tenant_id', context.tenantId);
+    const { data } = await query.maybeSingle();
     cfg = data || {};
   } catch (e) {}
 
@@ -17,7 +21,7 @@ module.exports = async (req, res) => {
     description: cfg.meta_description || 'منصة حملة إلكترونية موحدة',
     dir: 'rtl',
     lang: 'ar',
-    start_url: '/',
+    start_url: '/campaign',
     display: 'standalone',
     background_color: cfg.theme_mode === 'light' ? '#f1f5f9' : '#0f172a',
     theme_color: cfg.primary_color || '#15803d',

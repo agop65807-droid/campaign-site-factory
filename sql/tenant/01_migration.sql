@@ -338,8 +338,38 @@ end;
 $$;
 
 -- ============================================================
+-- Add tenant_id for Multi-Tenant Shared Database support
+-- ============================================================
+do $$
+begin
+  alter table campaigns add column if not exists tenant_id uuid;
+  alter table tweets add column if not exists tenant_id uuid;
+  alter table main_admins add column if not exists tenant_id uuid;
+  alter table sub_admins add column if not exists tenant_id uuid;
+  alter table admin_sessions add column if not exists tenant_id uuid;
+  alter table admin_activity_logs add column if not exists tenant_id uuid;
+  alter table invite_links add column if not exists tenant_id uuid;
+  alter table analytics_events add column if not exists tenant_id uuid;
+  alter table site_settings add column if not exists tenant_id uuid;
+exception when duplicate_column then null;
+end $$;
+
+create index if not exists idx_campaigns_tenant on campaigns(tenant_id);
+create index if not exists idx_tweets_tenant on tweets(tenant_id);
+create index if not exists idx_main_admins_tenant on main_admins(tenant_id);
+create index if not exists idx_sub_admins_tenant on sub_admins(tenant_id);
+create index if not exists idx_admin_sessions_tenant on admin_sessions(tenant_id);
+create index if not exists idx_admin_activity_logs_tenant on admin_activity_logs(tenant_id);
+create index if not exists idx_invite_links_tenant on invite_links(tenant_id);
+create index if not exists idx_analytics_events_tenant on analytics_events(tenant_id);
+create index if not exists idx_site_settings_tenant on site_settings(tenant_id);
+
+-- ============================================================
 -- Enable RLS (service_role bypasses, anon denied by default)
 -- ============================================================
+drop function if exists exec_sql(text);
+drop function if exists exec_sql(text, jsonb);
+
 alter table campaigns enable row level security;
 alter table tweets enable row level security;
 alter table main_admins enable row level security;
@@ -350,3 +380,23 @@ alter table invite_links enable row level security;
 alter table analytics_events enable row level security;
 alter table site_settings enable row level security;
 alter table rate_limits enable row level security;
+
+-- Revoke public execution of security definer functions
+revoke execute on all functions in schema public from public, anon, authenticated;
+grant execute on function tenant_check_rate_limit(text, integer, integer) to service_role;
+grant execute on function create_main_admin(text, text, boolean) to service_role;
+grant execute on function upsert_site_settings(jsonb) to service_role;
+
+revoke usage on schema public from public, anon, authenticated;
+revoke all privileges on all tables in schema public from public, anon, authenticated;
+revoke all privileges on all sequences in schema public from public, anon, authenticated;
+grant usage on schema public to service_role;
+grant all privileges on all tables in schema public to service_role;
+grant all privileges on all sequences in schema public to service_role;
+
+alter default privileges for role postgres in schema public
+  revoke all privileges on tables from public, anon, authenticated;
+alter default privileges for role postgres in schema public
+  revoke all privileges on sequences from public, anon, authenticated;
+alter default privileges for role postgres in schema public
+  revoke execute on functions from public, anon, authenticated;

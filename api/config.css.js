@@ -1,4 +1,5 @@
 const { tenantClient } = require('../lib/supabase');
+const { resolveTenant } = require('../lib/tenant-resolver');
 
 function hexToRgbVariables(hex) {
   const clean = hex.replace('#', '');
@@ -17,12 +18,14 @@ function hexToRgbVariables(hex) {
 module.exports = async (req, res) => {
   try {
     const db = tenantClient();
-
-    const { data: settings } = await db
+    const context = await resolveTenant(req);
+    if (!context.tenant) throw new Error('Tenant context is unresolved');
+    let query = db
       .from('site_settings')
       .select('*')
-      .limit(1)
-      .single();
+      .limit(1);
+    if (context.tenantId) query = query.eq('tenant_id', context.tenantId);
+    const { data: settings } = await query.maybeSingle();
 
     const primary = settings?.primary_color || '#15803d';
     const secondary = settings?.secondary_color || '#d97706';

@@ -15,8 +15,55 @@ const contentTypes = {
   '.webmanifest': 'application/manifest+json; charset=utf-8'
 };
 
-http.createServer((req, res) => {
-  const pathname = new URL(req.url, `http://${req.headers.host || 'localhost'}`).pathname;
+const tenantApiHandler = require('../api/[...path].js');
+const factoryApiHandler = require('../api/factory/[...path].js');
+const healthHandler = require('../api/health.js');
+const configCssHandler = require('../api/config.css.js');
+const manifestHandler = require('../api/manifest.js');
+
+http.createServer(async (req, res) => {
+  const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
+  const pathname = url.pathname;
+
+  // Handle API routes
+  if (pathname === '/api/health') {
+    await healthHandler(req, res);
+    return;
+  }
+
+  if (pathname === '/api/config.css') {
+    await configCssHandler(req, res);
+    return;
+  }
+
+  if (pathname === '/api/manifest.js' || pathname === '/manifest.json') {
+    await manifestHandler(req, res);
+    return;
+  }
+
+  if (pathname.startsWith('/api/factory')) {
+    try {
+      await factoryApiHandler(req, res);
+    } catch (err) {
+      console.error('Dev server factory API error:', err);
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: err.message }));
+    }
+    return;
+  }
+
+  if (pathname.startsWith('/api')) {
+    try {
+      await tenantApiHandler(req, res);
+    } catch (err) {
+      console.error('Dev server tenant API error:', err);
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: err.message }));
+    }
+    return;
+  }
+
+  // Handle static page routes
   const routes = {
     '/': 'index.html',
     '/campaign': 'campaign.html',
@@ -44,5 +91,5 @@ http.createServer((req, res) => {
     res.end(file);
   });
 }).listen(port, () => {
-  console.log(`Static development server running on http://localhost:${port}`);
+  console.log(`Full-stack development server running on http://localhost:${port}`);
 });

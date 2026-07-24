@@ -4,11 +4,16 @@
   "functions": {
     "api/[...path].js": { "maxDuration": 30 },
     "api/factory/[...path].js": { "maxDuration": 60 },
+    "api/factory-router.js": { "maxDuration": 60 },
+    "api/tenant-router.js": { "maxDuration": 30 },
     "api/health.js": { "maxDuration": 10 },
     "api/config.css.js": { "maxDuration": 10 },
     "api/manifest.js": { "maxDuration": 10 }
   },
   "rewrites": [
+    { "source": "/api/factory/:path*", "destination": "/api/factory-router?path=:path*" },
+    { "source": "/api/auth/:path*", "destination": "/api/tenant-router?path=auth/:path*" },
+    { "source": "/api/admin/:path*", "destination": "/api/tenant-router?path=admin/:path*" },
     { "source": "/campaign", "destination": "/campaign.html" },
     { "source": "/admin", "destination": "/admin.html" },
     { "source": "/factory", "destination": "/index.html" },
@@ -34,7 +39,7 @@
         { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.tailwindcss.com https://cdn.jsdelivr.net https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdn.tailwindcss.com; img-src 'self' data: blob: https: https://*.supabase.co https://api.qrserver.com; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self' https://*.supabase.co; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: blob: https:; font-src 'self' https://fonts.gstatic.com data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
         },
         {
           "key": "Strict-Transport-Security",

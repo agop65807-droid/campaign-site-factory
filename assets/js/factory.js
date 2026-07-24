@@ -96,6 +96,13 @@ async function handleLogin(e) {
     enterFactoryApp();
     showToast('مرحباً', 'success');
   } catch (err) {
+    if (err.status === 401 && err.data?.totp_required) {
+      $('totpSection').classList.remove('hidden');
+      $('loginTotp').setAttribute('required', 'required');
+      errEl.classList.add('hidden');
+      showToast('رمز 2FA مطلوب لإكمال الدخول', 'warning');
+      return;
+    }
     errEl.textContent = err.message || 'فشل تسجيل الدخول';
     errEl.classList.remove('hidden');
   } finally {

@@ -29,7 +29,12 @@ function createApi(storageKey, base = '') {
       }
       if (raw) return res;
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+      if (!res.ok) {
+        const error = new Error(data.error || ('HTTP ' + res.status));
+        error.status = res.status;
+        error.data = data;
+        throw error;
+      }
       return data;
     },
     get(p, o)  { return this.request(p, { ...o, method: 'GET' }); },

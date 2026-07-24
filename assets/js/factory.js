@@ -13,14 +13,43 @@ const factoryState = {
   setupToken2FA: null
 };
 
+function resetLoginState() {
+  const loginForm = $('loginForm');
+  const enrollSection = $('enrollTotpSection');
+  const totpSection = $('totpSection');
+  const loginError = $('loginError');
+  const enrollCode = $('enrollVerifyCode');
+  const loginTotp = $('loginTotp');
+  const enrollSecret = $('enrollSecret');
+  const enrollQr = $('enrollQr');
+
+  loginForm?.classList.remove('hidden');
+  enrollSection?.classList.add('hidden');
+  totpSection?.classList.add('hidden');
+  loginError?.classList.add('hidden');
+  enrollCode && (enrollCode.value = '');
+  loginTotp && (loginTotp.value = '');
+  enrollSecret && (enrollSecret.textContent = '');
+  enrollQr?.removeAttribute('src');
+  factoryState.setupToken2FA = null;
+}
+
 function showLoginView() {
+  document.body.classList.remove('factory-authenticated');
+  document.body.classList.add('factory-login');
   $('loginView').classList.remove('hidden');
   $('appView').classList.add('hidden');
+  resetLoginState();
 }
 
 function enterFactoryApp() {
+  // Set the auth state before changing either view so CSS cannot render both
+  // the enrollment card and the dashboard during a transition.
+  document.body.classList.add('factory-authenticated');
+  document.body.classList.remove('factory-login');
   $('loginView').classList.add('hidden');
   $('appView').classList.remove('hidden');
+  resetLoginState();
   showSection('dashboard');
 }
 

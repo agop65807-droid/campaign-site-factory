@@ -68,7 +68,9 @@ async function loadAll() {
     if (state.campaigns.length > 1) {
       renderCampaignsList();
     } else {
-      openCampaign(state.campaigns[0].id, campRes);
+      // The list response only contains campaign summaries. Fetch the
+      // selected campaign details (including tweets) before rendering it.
+      await openCampaign(state.campaigns[0].id, campRes.campaign ? campRes : null);
     }
   } catch (e) {
     console.error(e);

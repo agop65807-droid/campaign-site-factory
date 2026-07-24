@@ -147,6 +147,23 @@ assert(!provisioningSource.includes('healthy = true; // Non-blocking'), 'Provisi
 assert((factorySource.match(/async function initFactory\(/g) || []).length === 1, 'Factory has one initFactory definition');
 assert((factorySource.match(/async function handleLogin\(/g) || []).length === 1, 'Factory has one handleLogin definition');
 
+// 8. Factory Wizard Validation Regressions
+console.log('\n8. Checking Factory Wizard Validation Regressions:');
+const { tenantCreateSchema } = require(path.join(rootDir, 'lib', 'validation.js'));
+const blankOptionalUrls = tenantCreateSchema.safeParse({
+  orgName: 'سلام',
+  slug: 'ffff',
+  logoUrl: '',
+  faviconUrl: '',
+  primaryColor: '#15803d',
+  secondaryColor: '#d97706',
+  themeMode: 'dark',
+  enabledSharePlatforms: ['x']
+});
+assert(blankOptionalUrls.success, 'Factory tenant creation accepts blank optional logo URLs');
+const malformedLogoUrl = tenantCreateSchema.safeParse({ orgName: 'سلام', logoUrl: 'not-a-url' });
+assert(!malformedLogoUrl.success, 'Factory tenant creation still rejects malformed logo URLs');
+
 console.log('\n==================================================');
 console.log(`Test Results: ${passed} passed, ${failed} failed.`);
 console.log('==================================================');

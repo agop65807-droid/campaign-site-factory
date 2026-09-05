@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>لوحة تحكم المصنع — Campaign Site Factory</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['IBM Plex Sans Arabic', 'sans-serif'], mono: ['IBM Plex Mono', 'monospace'] },
+        colors: {
+          ink:   '#0B121D',
+          panel: '#121C2C',
+          panel2:'#16223570',
+          steel: '#28374E',
+          steel2:'#1C2A3E',
+          signal:'#2FC8B4',
+          amber: '#E0A23B',
+          alert: '#E1566B',
+          hi:    '#EAF1F7',
+          lo:    '#8DA1B8'
+        }
+      }
+    }
+  };
+</script>
+<style>
+  * { -webkit-tap-highlight-color: transparent; }
+  body { font-family: 'IBM Plex Sans Arabic', sans-serif; background: #0B121D; color: #EAF1F7; }
+  .mono { font-family: 'IBM Plex Mono', monospace; }
+
+  .blueprint-bg {
+    background-image:
+      linear-gradient(rgba(47,200,180,0.055) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(47,200,180,0.055) 1px, transparent 1px);
+    background-size: 34px 34px;
+    background-position: center;
+  }
+
+  .panel { background: #121C2C; border: 1px solid #28374E; }
+  .panel-soft { background: #101a29; border: 1px solid #1C2A3E; }
+
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #28374E; border-radius: 8px; }
+
+  input, select { color-scheme: dark; }
+  input:focus, select:focus, textarea:focus, button:focus-visible, a:focus-visible {
+    outline: 2px solid #2FC8B4; outline-offset: 2px;
+  }
+
+  .led { width: 8px; height: 8px; border-radius: 999px; flex-shrink: 0; }
+  .led-active      { background: #2FC8B4; box-shadow: 0 0 8px 1px #2FC8B4AA; }
+  .led-provisioning{ background: #E0A23B; box-shadow: 0 0 8px 1px #E0A23BAA; animation: ledPulse 1.6s ease-in-out infinite; }
+  .led-suspended   { background: #8DA1B8; }
+  .led-failed      { background: #E1566B; box-shadow: 0 0 8px 1px #E1566BAA; }
+  .led-deleted     { background: #48566c; }
+  @keyframes ledPulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+
+  .badge { display:inline-flex; align-items:center; gap:.4rem; padding:.28rem .7rem; border-radius:6px; font-size:.72rem; font-weight:600; letter-spacing:.01em; }
+  .badge-active       { background: rgba(47,200,180,.10); color:#5FE0CE; border:1px solid rgba(47,200,180,.25); }
+  .badge-provisioning { background: rgba(224,162,59,.10); color:#F0BE72; border:1px solid rgba(224,162,59,.25); }
+  .badge-suspended    { background: rgba(141,161,184,.10); color:#AEC0D2; border:1px solid rgba(141,161,184,.22); }
+  .badge-failed       { background: rgba(225,86,107,.10); color:#F08999; border:1px solid rgba(225,86,107,.25); }
+  .badge-deleted      { background: rgba(72,86,108,.15); color:#66768E; border:1px solid rgba(72,86,108,.3); }
+
+  .btn-primary { background: #2FC8B4; color: #06231F; font-weight: 600; }
+  .btn-primary:hover { background: #46D8C5; }
+  .btn-primary:disabled { opacity: .45; }
+  .nav-item { color: #8DA1B8; transition: color .15s, background .15s; }
+  .nav-item:hover { color: #EAF1F7; background: #16223570; }
+  .nav-item.is-active { color: #EAF1F7; background: #16223570; }
+  .nav-item.is-active .rail-dot { background: #2FC8B4; }
+
+  .rail { position: relative; }
+  .rail::before {
+    content: ''; position: absolute; top: 0; bottom: 0; right: 15px;
+    width: 2px; background: #28374E;
+  }
+  .rail-node { position: relative; z-index: 1; }
+  .rail-dot {
+    width: 32px; height: 32px; border-radius: 999px; display:flex; align-items:center; justify-content:center;
+    background: #16223570; border: 2px solid #28374E; color:#8DA1B8; flex-shrink:0;
+    transition: all .25s;
+  }
+  .rail-dot.done   { background: #123B36; border-color:#2FC8B4; color:#5FE0CE; }
+  .rail-dot.active { background: #3A2C10; border-color:#E0A23B; color:#F0BE72; animation: dotGlow 1.4s ease-in-out infinite; }
+  .rail-dot.failed { background: #3A141C; border-color:#E1566B; color:#F08999; }
+  @keyframes dotGlow { 0%,100% { box-shadow: 0 0 0 0 #E0A23B55; } 50% { box-shadow: 0 0 0 6px #E0A23B00; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    .led-provisioning, .rail-dot.active { animation: none; }
+  }
+
+  .fade-in { animation: fadeIn .35s ease both; }
+  @keyframes fadeIn { from { opacity:0; transform: translateY(4px); } to { opacity:1; transform:none; } }
+</style>
+</head>
+<body>
+
+<div x-data="factoryApp()" x-init="init()" class="min-h-screen">
+
+  <template x-if="screen !== 'dashboard'">
+    <div class="min-h-screen flex items-center justify-center p-4 blueprint-bg">
+      <div class="w-full max-w-md fade-in">
+        <div class="flex items-center gap-3 mb-8 justify-center">
+          <svg width="34" height="34" viewBox="0 0 34 34" fill="none">
+            <rect x="1" y="1" width="32" height="32" rx="8" stroke="#2FC8B4" stroke-width="1.5"/>
+            <path d="M9 23V15L17 10L25 15V23" stroke="#2FC8B4" stroke-width="1.6" stroke-linejoin="round"/>
+            <path d="M13 23V18H21V23" stroke="#2FC8B4" stroke-width="1.6" stroke-linejoin="round"/>
+          </svg>
+          <div>
+            <p class="font-bold text-sm leading-tight">مصنع مواقع الحملات</p>
+            <p class="text-[11px] text-lo leading-tight mono">نظام إدارة الجهات</p>
+          </div>
+        </div>
+
+        <div class="panel rounded-2xl p-8 shadow-2xl shadow-black/40">
+          <h1 class="text-lg font-bold mb-1">لوحة تحكم المصنع</h1>
+          <p class="text-sm text-lo mb-6">وصول مخصّص لفريقنا فقط — يتطلب مصادقة ثنائية</p>
+
+          <template x-if="errorMsg"><div class="mb-4 p-3 rounded-xl bg-alert/10 border border-alert/30 text-[#F08999] text-sm"><span x-text="errorMsg"></span></div></template>
+
+          <template x-if="screen === 'login'">
+            <form @submit.prevent="submitLogin()" class="space-y-3">
+              <input x-model="loginForm.username" type="text" placeholder="اسم المستخدم" required autocomplete="username" class="w-full px-4 py-3 rounded-xl panel-soft border-0 focus:ring-0 text-sm placeholder:text-lo/70">
+              <input x-model="loginForm.password" type="password" placeholder="كلمة المرور" required autocomplete="current-password" class="w-full px-4 py-3 rounded-xl panel-soft border-0 focus:ring-0 text-sm placeholder:text-lo/70">
+              <button type="submit" :disabled="loading" class="btn-primary w-full py-3 rounded-xl text-sm mt-2">
+                <span x-show="!loading">تسجيل الدخول</span><span x-show="loading">جارٍ التحقق…</span>
+              </button>
+            </form>
+          </template>
+
+          <template x-if="screen === 'totp-verify'">
+            <form @submit.prevent="submitTotpVerify()" class="space-y-4">
+              <p class="text-xs text-lo mono">التحقق بخطوتين</p>
+              <input x-model="totpCode" inputmode="numeric" maxlength="6" placeholder="000000" required autofocus class="mono w-full px-4 py-3 rounded-xl panel-soft border-0 text-center text-2xl tracking-[0.5em]">
+              <button type="submit" :disabled="loading" class="btn-primary w-full py-3 rounded-xl text-sm">تأكيد الدخول</button>
+            </form>
+          </template>
+
+          <template x-if="screen === 'totp-enroll'">
+            <div class="space-y-4">
+              <p class="text-xs text-lo mono">تفعيل التحقق بخطوتين مطلوب</p>
+              <p class="text-sm text-lo">امسح الرمز ضوئيًا عبر تطبيق مصادقة (Google Authenticator / Authy)، ثم أدخل الرمز الحالي لتفعيل الحساب.</p>
+              <div class="bg-white p-3 rounded-xl flex items-center justify-center w-fit mx-auto">
+                <img :src="'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' + encodeURIComponent(otpauthUrl)" class="w-36 h-36" alt="QR">
+              </div>
+              <p class="text-[11px] text-lo mono break-all text-center" x-text="totpSecret"></p>
+              <form @submit.prevent="submitTotpEnrollConfirm()" class="space-y-3">
+                <input x-model="totpCode" inputmode="numeric" maxlength="6" placeholder="000000" required class="mono w-full px-4 py-3 rounded-xl panel-soft border-0 text-center text-2xl tracking-[0.5em]">
+                <button type="submit" :disabled="loading" class="btn-primary w-full py-3 rounded-xl text-sm">تفعيل والدخول</button>
+              </form>
+            </div>
+          </template>
+        </div>
+      </div>
+    </div>
+  </template>
+
+  <template x-if="screen === 'dashboard'">
+    <div class="flex min-h-screen">
+
+      <!-- Mobile top bar (sidebar is desktop-only — see aside below) -->
+      <div class="md:hidden panel border-x-0 border-t-0 sticky top-0 z-30 px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <svg width="22" height="22" viewBox="0 0 34 34" fill="none">
+            <rect x="1" y="1" width="32" height="32" rx="8" stroke="#2FC8B4" stroke-width="1.5"/>
+            <path d="M9 23V15L17 10L25 15V23" stroke="#2FC8B4" stroke-width="1.6" stroke-linejoin="round"/>
+            <path d="M13 23V18H21V23" stroke="#2FC8B4" stroke-width="1.6" stroke-linejoin="round"/>
+          </svg>
+          <span class="font-bold text-sm">مصنع المواقع</span>
+        </div>
+        <button @click="logout()" class="text-xs text-alert/80">خروج</button>
+      </div>
+      <nav class="md:hidden flex gap-2 px-4 py-3 overflow-x-auto">
+        <button @click="activeTab='tenants'" :class="activeTab==='tenants' ? 'bg-signal/15 text-[#5FE0CE]' : 'panel-soft text-lo'" class="px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap">الجهات</button>
+        <button @click="activeTab='create'; wizardStep=1" :class="activeTab==='create' ? 'bg-signal/15 text-[#5FE0CE]' : 'panel-soft text-lo'" class="px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap">+ إنشاء جهة</button>
+        <button @click="activeTab='audit'; loadAuditLog()" :class="activeTab==='audit' ? 'bg-signal/15 text-[#5FE0CE]' : 'panel-soft text-lo'" class="px-3 py-2 rounded-lg text-xs font-medium whitespace-nowrap">سجل التدقيق</button>
+      </nav>
+
+      <aside class="hidden md:flex w-60 shrink-0 panel border-l-0 border-y-0 flex-col fixed inset-y-0 right-0 z-30">
+        <div class="p-5 flex items-center gap-3 border-b border-steel">
+          <svg width="28" height="28" viewBox="0 0 34 34" fill="none">
+            <rect x="1" y="1" width="32" height="32" rx="8" stroke="#2FC8B4" stroke-width="1.5"/>
+            <path d="M9 23V15L17 10L25 15V23" stroke="#2FC8B4" stroke-width="1.6" stroke-linejoin="round"/>
+            <path d="M13 23V18H21V23" stroke="#2FC8B4" stroke-width="1.6" stroke-linejoin="round"/>
+          </svg>
+          <div class="min-w-0">
+            <p class="font-bold text-sm truncate">مصنع المواقع</p>
+            <p class="text-[10px] text-lo mono truncate">غرفة التحكم</p>
+          </div>
+        </div>
+
+        <nav class="flex-1 p-3 space-y-1">
+          <button @click="activeTab='tenants'" :class="activeTab==='tenants' && 'is-active'" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium">
+            <span class="rail-dot !w-2 !h-2 !border-0 bg-steel"></span>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+            الجهات
+            <span class="mono text-[10px] text-lo mr-auto" x-text="tenants.length || ''"></span>
+          </button>
+          <button @click="activeTab='create'; wizardStep=1" :class="activeTab==='create' && 'is-active'" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium">
+            <span class="rail-dot !w-2 !h-2 !border-0 bg-steel"></span>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            إنشاء جهة جديدة
+          </button>
+          <button @click="activeTab='audit'; loadAuditLog()" :class="activeTab==='audit' && 'is-active'" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium">
+            <span class="rail-dot !w-2 !h-2 !border-0 bg-steel"></span>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 2 4 6v6c0 5 3.5 8.5 8 10 4.5-1.5 8-5 8-10V6l-8-4Z"/></svg>
+            سجل التدقيق
+          </button>
+        </nav>
+
+        <div class="p-4 border-t border-steel">
+          <p class="text-sm font-medium truncate" x-text="superAdminName"></p>
+          <button @click="logout()" class="text-xs text-alert/80 hover:text-alert mt-1">تسجيل الخروج</button>
+        </div>
+      </aside>
+
+      <div class="flex-1 md:mr-60">
+        <main class="p-4 md:p-8 max-w-5xl">
+
+          <template x-if="activeTab === 'tenants'">
+            <div class="fade-in space-y-6">
+              <div>
+                <h2 class="text-xl font-bold">الجهات</h2>
+                <p class="text-sm text-lo mt-0.5">واجهة كل جهة تعمل على Vercel، وبياناتها معزولة في مخطط قاعدة بيانات خاص بها على خادم Render المشترك.</p>
+              </div>
+
+              <template x-if="tenants.length === 0">
+                <div class="panel rounded-2xl p-10 text-center">
+                  <p class="text-lo text-sm">لا توجد جهات بعد. ابدأ بإنشاء أول جهة من القائمة الجانبية.</p>
+                </div>
+              </template>
+
+              <div class="grid gap-3">
+                <template x-for="t in tenants" :key="t.id">
+                  <div class="panel rounded-2xl p-5">
+                    <div class="flex items-start justify-between gap-4 flex-wrap">
+                      <div class="flex items-start gap-3 min-w-0">
+                        <span class="led mt-1.5" :class="'led-' + t.status"></span>
+                        <div class="min-w-0">
+                          <div class="flex items-center gap-2 flex-wrap">
+                            <span class="font-bold" x-text="t.org_name"></span>
+                            <span class="badge" :class="'badge-' + t.status" x-text="statusLabel(t.status)"></span>
+                          </div>
+                          <p class="mono text-xs text-lo mt-1 truncate" x-text="t.slug + '  ·  ' + (t.vercel_url ? t.vercel_url.replace('https://','') : 'no-url-yet') + '  ·  ' + new Date(t.created_at).toLocaleDateString('ar')"></p>
+                        </div>
+                      </div>
+                      <div class="flex items-center gap-1.5 flex-wrap">
+                        <a x-show="t.vercel_url" :href="t.vercel_url" target="_blank" class="px-3 py-1.5 rounded-lg panel-soft text-xs hover:bg-steel2 transition">الموقع</a>
+                        <a x-show="t.vercel_url" :href="t.vercel_url + '/admin'" target="_blank" class="px-3 py-1.5 rounded-lg panel-soft text-xs hover:bg-steel2 transition">الإدارة</a>
+                        <button @click="revealAdminPassword(t.id)" class="px-3 py-1.5 rounded-lg panel-soft text-xs hover:bg-steel2 transition">كلمة المرور</button>
+                        <button x-show="t.status === 'active'" @click="suspendTenant(t.id)" class="px-3 py-1.5 rounded-lg text-xs bg-amber/10 text-[#F0BE72] hover:bg-amber/20 transition">تعليق</button>
+                        <button x-show="t.status === 'suspended'" @click="resumeTenant(t.id)" class="px-3 py-1.5 rounded-lg text-xs bg-signal/10 text-[#5FE0CE] hover:bg-signal/20 transition">استئناف</button>
+                        <button x-show="t.status === 'active'" @click="updateTemplate(t.id)" class="px-3 py-1.5 rounded-lg panel-soft text-xs hover:bg-steel2 transition">تحديث القالب</button>
+                        <button x-show="t.status === 'active'" @click="openEditBranding(t)" class="px-3 py-1.5 rounded-lg bg-signal/10 text-[#5FE0CE] text-xs hover:bg-signal/20 transition">تعديل الهوية</button>
+                        <button x-show="t.status === 'provisioning'" @click="openJobView(t)" class="px-3 py-1.5 rounded-lg text-xs bg-amber/10 text-[#F0BE72] hover:bg-amber/20 transition">عرض التقدّم</button>
+                        <button @click="confirmDeleteTenant(t)" class="px-3 py-1.5 rounded-lg text-xs bg-alert/10 text-[#F08999] hover:bg-alert/20 transition">حذف</button>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+
+              <template x-if="viewingJob">
+                <div class="panel rounded-2xl p-6 fade-in">
+                  <div class="flex items-center justify-between mb-5">
+                    <div>
+                      <h3 class="font-bold" x-text="'خط الإنتاج — ' + (viewingJobTenantName || '')"></h3>
+                      <p class="text-xs text-lo mono mt-0.5" x-text="'الحالة: ' + jobStatusLabel(viewingJob.status)"></p>
+                    </div>
+                    <button @click="viewingJob=null; if(jobPollInterval) clearInterval(jobPollInterval)" class="text-xs text-lo hover:text-hi">إغلاق ✕</button>
+                  </div>
+                  <div class="rail space-y-4 pr-1">
+                    <template x-for="s in (viewingJob.steps || [])" :key="s.step">
+                      <div class="rail-node flex items-center gap-4">
+                        <div class="rail-dot" :class="s.status === 'succeeded' ? 'done' : (s.status === 'running' ? 'active' : (s.status === 'failed' ? 'failed' : ''))">
+                          <span x-show="s.status === 'succeeded'">✓</span>
+                          <span x-show="s.status === 'failed'">✕</span>
+                          <span x-show="s.status === 'running'" class="w-2 h-2 rounded-full bg-current"></span>
+                          <span x-show="s.status === 'pending'" class="w-1.5 h-1.5 rounded-full bg-current opacity-50"></span>
+                        </div>
+                        <div class="min-w-0 flex-1 pb-1">
+                          <p class="text-sm font-medium" x-text="stepLabel(s.step)"></p>
+                          <p x-show="s.error" class="text-xs text-alert mt-0.5" x-text="s.error"></p>
+                        </div>
+                      </div>
+                    </template>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </template>
+
+          <template x-if="activeTab === 'create'">
+            <div class="fade-in grid md:grid-cols-[220px_1fr] gap-8">
+
+              <div class="rail space-y-4 pr-1 hidden md:block">
+                <template x-for="(label, idx) in wizardStations" :key="idx">
+                  <div class="rail-node flex items-center gap-4 cursor-pointer" @click="wizardStep = idx+1">
+                    <div class="rail-dot" :class="wizardStep > idx+1 ? 'done' : (wizardStep === idx+1 ? 'active' : '')">
+                      <span x-show="wizardStep > idx+1">✓</span>
+                      <span x-show="wizardStep === idx+1" class="mono text-[11px]" x-text="idx+1"></span>
+                      <span x-show="wizardStep < idx+1" class="mono text-[11px] opacity-50" x-text="idx+1"></span>
+                    </div>
+                    <p class="text-sm" :class="wizardStep === idx+1 ? 'text-hi font-medium' : 'text-lo'" x-text="label"></p>
+                  </div>
+                </template>
+              </div>
+
+              <div class="panel rounded-2xl p-7 max-w-xl">
+                <p class="mono text-xs text-signal mb-4 md:hidden" x-text="'المحطة ' + wizardStep + ' من 6 — ' + wizardStations[wizardStep-1]"></p>
+
+                <template x-if="wizardStep === 1">
+                  <div class="space-y-4">
+                    <h3 class="font-bold text-lg mb-1">بيانات الجهة</h3>
+                    <input x-model="wizard.orgName" placeholder="اسم الجهة" class="w-full px-4 py-3 rounded-xl panel-soft border-0 text-sm">
+                    <input x-model="wizard.siteDescription" placeholder="وصف مختصر" class="w-full px-4 py-3 rounded-xl panel-soft border-0 text-sm">
+                    <input x-model="wizard.hashtag" placeholder="الهاشتاق الافتراضي (بدون #)" class="w-full px-4 py-3 rounded-xl panel-soft border-0 text-sm">
+                    <input x-model="wizard.slug" placeholder="المعرّف الفريد — اتركه فارغًا للتوليد التلقائي" class="mono w-full px-4 py-3 rounded-xl panel-soft border-0 text-sm">
+                  </div>
+                </template>
+
+                <template x-if="wizardStep === 2">
+                  <div class="space-y-5">
+                    <h3 class="font-bold text-lg mb-1">الهوية البصرية</h3>
+                    <div class="flex items-center gap-3">
+                      <input type="color" x-model="wizard.primaryColor" class="w-11 h-11 rounded-lg bg-transparent cursor-pointer">
+                      <div><p class="text-sm">اللون الأساسي</p><p class="mono text-xs text-lo" x-text="wizard.primaryColor"></p></div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                      <input type="color" x-model="wizard.secondaryColor" class="w-11 h-11 rounded-lg bg-transparent cursor-pointer">
+                      <div><p class="text-sm">اللون الثانوي</p><p class="mono text-xs text-lo" x-text="wizard.secondaryColor"></p></div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                      <label class="text-sm text-lo w-24">الوضع</label>
+                      <select x-model="wizard.themeMode" class="px-3 py-2 rounded-lg panel-soft border-0 text-sm">
+                        <option value="dark">داكن</option><option value="light">فاتح</option>
+                      </select>
+                    </div>
+                    <label class="flex items-center gap-3 px-4 py-3 rounded-xl panel-soft cursor-pointer text-sm text-lo hover:text-hi transition">
+                      <div x-show="wizardLogoPreview" class="w-8 h-8 rounded-lg overflow-hidden shrink-0 panel"><img :src="wizardLogoPreview" class="w-full h-full object-contain"></div>
+                      <svg x-show="!wizardLogoPreview" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                      <span x-text="wizard.logoBase64 ? 'تم اختيار الشعار ✓' : 'رفع الشعار'"></span>
+                      <input type="file" accept="image/*" @change="onLogoSelected($event)" class="hidden">
+                    </label>
+                    <div class="rounded-xl p-4 flex items-center gap-3" :style="'background:' + wizard.primaryColor + '18; border:1px solid ' + wizard.primaryColor + '40'">
+                      <div x-show="wizardLogoPreview" class="w-9 h-9 rounded-lg overflow-hidden shrink-0"><img :src="wizardLogoPreview" class="w-full h-full object-contain"></div>
+                      <div x-show="!wizardLogoPreview" class="w-9 h-9 rounded-lg" :style="'background:' + wizard.primaryColor"></div>
+                      <p class="font-bold" x-text="wizard.orgName || 'اسم الجهة'"></p>
+                    </div>
+                  </div>
+                </template>
+
+                <template x-if="wizardStep === 3">
+                  <div class="space-y-4">
+                    <h3 class="font-bold text-lg mb-1">بيانات دخول الأدمن الرئيسي</h3>
+                    <input x-model="wizard.adminUsername" placeholder="اسم مستخدم الأدمن" class="w-full px-4 py-3 rounded-xl panel-soft border-0 text-sm">
+                    <p class="text-xs text-lo leading-relaxed">سيتم توليد كلمة مرور قوية تلقائيًا وعرضها مرة واحدة فقط بعد الإنشاء. سيُطالَب الأدمن بتغييرها عند أول دخول.</p>
+                  </div>
+                </template>
+
+                <template x-if="wizardStep === 4">
+                  <div class="space-y-3">
+                    <h3 class="font-bold text-lg mb-1">منصات المشاركة</h3>
+                    <template x-for="p in [['x','X'],['whatsapp','واتساب'],['facebook','فيسبوك']]" :key="p[0]">
+                      <label class="flex items-center gap-3 p-3.5 rounded-xl panel-soft cursor-pointer">
+                        <input type="checkbox" :checked="wizard.enabledSharePlatforms.includes(p[0])" @change="togglePlatform(p[0])" class="accent-signal w-4 h-4">
+                        <span class="text-sm" x-text="p[1]"></span>
+                      </label>
+                    </template>
+                  </div>
+                </template>
+
+                <template x-if="wizardStep === 5">
+                  <div class="space-y-3">
+                    <h3 class="font-bold text-lg mb-1">النطاق</h3>
+                    <p class="text-sm text-lo">سيُنشأ الموقع تلقائيًا على:</p>
+                    <p class="mono text-signal text-lg" x-text="(wizard.slug || slugify(wizard.orgName) || 'your-org') + '.' + baseDomain"></p>
+                  </div>
+                </template>
+
+                <template x-if="wizardStep === 6">
+                  <div class="space-y-3">
+                    <h3 class="font-bold text-lg mb-3">مراجعة وتأكيد</h3>
+                    <div class="space-y-2 text-sm">
+                      <div class="flex justify-between panel-soft rounded-lg px-4 py-2.5"><span class="text-lo">الجهة</span><span x-text="wizard.orgName"></span></div>
+                      <div class="flex justify-between panel-soft rounded-lg px-4 py-2.5"><span class="text-lo">النطاق</span><span class="mono text-xs" x-text="(wizard.slug || slugify(wizard.orgName)) + '.' + baseDomain"></span></div>
+                      <div class="flex justify-between panel-soft rounded-lg px-4 py-2.5"><span class="text-lo">الأدمن</span><span x-text="wizard.adminUsername"></span></div>
+                      <div class="flex justify-between panel-soft rounded-lg px-4 py-2.5"><span class="text-lo">المنصات</span><span x-text="wizard.enabledSharePlatforms.join(' · ')"></span></div>
+                    </div>
+                  </div>
+                </template>
+
+                <div class="flex justify-between mt-7">
+                  <button x-show="wizardStep > 1" @click="wizardStep--" class="px-4 py-2.5 rounded-xl panel-soft text-sm hover:bg-steel2 transition">السابق</button>
+                  <div class="flex-1"></div>
+                  <button x-show="wizardStep < 6" @click="wizardStep++" class="btn-primary px-5 py-2.5 rounded-xl text-sm">التالي</button>
+                  <button x-show="wizardStep === 6" @click="submitCreateTenant()" :disabled="loading" class="btn-primary px-6 py-2.5 rounded-xl text-sm">
+                    <span x-show="!loading">بدء الإنشاء</span><span x-show="loading">جارٍ الإرسال…</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </template>
+
+          <template x-if="activeTab === 'audit'">
+            <div class="fade-in">
+              <h2 class="text-xl font-bold mb-1">سجل التدقيق</h2>
+              <p class="text-sm text-lo mb-5">سجل غير قابل للتعديل لكل إجراء يمس بنية أي جهة.</p>
+              <div class="panel rounded-2xl overflow-hidden">
+                <table class="w-full text-sm">
+                  <thead><tr class="panel-soft"><th class="text-right px-4 py-3 text-[11px] text-lo font-medium">الإجراء</th><th class="text-right px-4 py-3 text-[11px] text-lo font-medium">المشرف</th><th class="text-right px-4 py-3 text-[11px] text-lo font-medium">الجهة</th><th class="text-right px-4 py-3 text-[11px] text-lo font-medium mono">عنوان IP</th><th class="text-right px-4 py-3 text-[11px] text-lo font-medium">الوقت</th></tr></thead>
+                  <tbody>
+                    <template x-for="log in auditLogs" :key="log.id">
+                      <tr class="border-t border-steel2">
+                        <td class="px-4 py-3 mono text-xs text-signal" x-text="actionTypeLabel(log.action_type)"></td>
+                        <td class="px-4 py-3 text-lo" x-text="log.super_admin_name"></td>
+                        <td class="px-4 py-3 mono text-xs text-lo" x-text="log.tenant_id || '—'"></td>
+                        <td class="px-4 py-3 mono text-xs text-lo" x-text="log.ip_address"></td>
+                        <td class="px-4 py-3 text-xs text-lo" x-text="new Date(log.created_at).toLocaleString('ar')"></td>
+                      </tr>
+                    </template>
+                    <template x-if="auditLogs.length === 0"><tr><td colspan="5" class="px-4 py-8 text-center text-lo text-sm">لا توجد سجلات بعد</td></tr></template>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </template>
+
+        </main>
+      </div>
+    </div>
+  </template>
+
+  <template x-if="revealedPassword">
+    <div class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" @click.self="revealedPassword=null">
+      <div class="panel rounded-2xl p-6 max-w-sm w-full fade-in">
+        <p class="mono text-[11px] text-amber mb-2">يُعرض لمرة واحدة فقط</p>
+        <h3 class="font-bold mb-3">كلمة مرور الأدمن</h3>
+        <p class="mono text-lg panel-soft rounded-xl p-4 text-center break-all"><span x-text="revealedPassword"></span></p>
+        <p class="text-xs text-lo mt-3 leading-relaxed">شارك هذه الكلمة مع الجهة عبر قناة آمنة. لن تُعرض مرة أخرى.</p>
+        <button @click="revealedPassword=null" class="btn-primary w-full mt-4 py-2.5 rounded-xl text-sm">إغلاق</button>
+      </div>
+    </div>
+  </template>
+
+  <!-- Edit branding modal — post-creation identity control (PRD FR4) -->
+  <template x-if="editingTenant">
+    <div class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4" @click.self="closeEditBranding()">
+      <div class="panel rounded-2xl p-6 max-w-lg w-full fade-in max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <p class="mono text-[11px] text-signal mb-1">تعديل الهوية البصرية</p>
+            <h3 class="font-bold" x-text="editingTenant.org_name"></h3>
+          </div>
+          <button @click="closeEditBranding()" class="text-lo hover:text-hi text-sm">إغلاق ✕</button>
+        </div>
+
+        <template x-if="brandingLoading">
+          <p class="text-sm text-lo py-8 text-center">جارٍ التحميل…</p>
+        </template>
+
+        <template x-if="!brandingLoading && brandingForm">
+          <div class="space-y-4">
+            <template x-if="brandingError"><div class="p-3 rounded-xl bg-alert/10 border border-alert/30 text-[#F08999] text-sm" x-text="brandingError"></div></template>
+            <template x-if="brandingSaved"><div class="p-3 rounded-xl bg-signal/10 border border-signal/30 text-[#5FE0CE] text-sm">تم الحفظ بنجاح</div></template>
+
+            <input x-model="brandingForm.orgName" placeholder="اسم الجهة" class="w-full px-4 py-3 rounded-xl panel-soft border-0 text-sm">
+            <input x-model="brandingForm.siteDescription" placeholder="وصف مختصر" class="w-full px-4 py-3 rounded-xl panel-soft border-0 text-sm">
+            <input x-model="brandingForm.hashtag" placeholder="الهاشتاق الافتراضي (بدون #)" class="w-full px-4 py-3 rounded-xl panel-soft border-0 text-sm">
+
+            <div class="flex items-center gap-3">
+              <input type="color" x-model="brandingForm.primaryColor" class="w-11 h-11 rounded-lg bg-transparent cursor-pointer">
+              <div><p class="text-sm">اللون الأساسي</p><p class="mono text-xs text-lo" x-text="brandingForm.primaryColor"></p></div>
+            </div>
+            <div class="flex items-center gap-3">
+              <input type="color" x-model="brandingForm.secondaryColor" class="w-11 h-11 rounded-lg bg-transparent cursor-pointer">
+              <div><p class="text-sm">اللون الثانوي</p><p class="mono text-xs text-lo" x-text="brandingForm.secondaryColor"></p></div>
+            </div>
+            <div class="flex items-center gap-3">
+              <label class="text-sm text-lo w-24">الوضع</label>
+              <select x-model="brandingForm.themeMode" class="px-3 py-2 rounded-lg panel-soft border-0 text-sm">
+                <option value="dark">داكن</option><option value="light">فاتح</option>
+              </select>
+            </div>
+
+            <div class="space-y-2">
+              <p class="text-sm text-lo">الشعار الحالي</p>
+              <div class="flex items-center gap-3">
+                <div class="w-14 h-14 rounded-xl panel-soft flex items-center justify-center overflow-hidden shrink-0">
+                  <img x-show="brandingLogoPreview" :src="brandingLogoPreview" class="w-full h-full object-contain">
+                  <span x-show="!brandingLogoPreview" class="text-lo text-xs">لا يوجد</span>
+                </div>
+                <label class="flex-1 flex items-center gap-2 px-4 py-2.5 rounded-xl panel-soft cursor-pointer text-sm text-lo hover:text-hi transition">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  <span x-text="brandingForm.newLogoBase64 ? 'تم اختيار شعار جديد ✓' : 'رفع شعار جديد'"></span>
+                  <input type="file" accept="image/*" @change="onBrandingLogoSelected($event)" class="hidden">
+                </label>
+                <button x-show="brandingLogoPreview" @click="brandingForm.clearLogo = true; brandingForm.newLogoBase64 = null; brandingLogoPreview = null" type="button" class="text-xs text-alert/80 hover:text-alert shrink-0">إزالة</button>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <p class="text-sm text-lo">منصات المشاركة</p>
+              <div class="flex gap-2">
+                <template x-for="p in [['x','X'],['whatsapp','واتساب'],['facebook','فيسبوك']]" :key="p[0]">
+                  <label class="flex-1 flex items-center gap-2 p-3 rounded-xl panel-soft cursor-pointer text-sm">
+                    <input type="checkbox" :checked="brandingForm.enabledSharePlatforms.includes(p[0])" @change="toggleBrandingPlatform(p[0])" class="accent-signal w-4 h-4">
+                    <span x-text="p[1]"></span>
+                  </label>
+                </template>
+              </div>
+            </div>
+
+            <div class="flex gap-3 pt-2">
+              <button @click="closeEditBranding()" class="flex-1 py-2.5 rounded-xl panel-soft text-sm">إلغاء</button>
+              <button @click="saveBranding()" :disabled="brandingSaving" class="btn-primary flex-1 py-2.5 rounded-xl text-sm">
+                <span x-show="!brandingSaving">حفظ التغييرات</span><span x-show="brandingSaving">جارٍ الحفظ…</span>
+              </button>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
+  </template>
+
+</div>
+
+<script>
+function factoryApp() {
+  return {
+    screen: 'login',
+    loading: false,
+    errorMsg: '',
+    loginForm: { username: '', password: '' },
+    preToken: null,
+    totpCode: '',
+    totpSecret: '',
+    otpauthUrl: '',
+    token: null,
+    superAdminName: '',
+    activeTab: 'tenants',
+    tenants: [],
+    auditLogs: [],
+    viewingJob: null,
+    viewingJobTenantName: '',
+    jobPollInterval: null,
+    revealedPassword: null,
+    editingTenant: null,
+    brandingLoading: false,
+    brandingSaving: false,
+    brandingSaved: false,
+    brandingError: '',
+    brandingForm: null,
+    brandingLogoPreview: null,
+    baseDomain: 'campaigns.example.com',
+    wizardStep: 1,
+    wizardLogoPreview: null,
+    wizardStations: ['بيانات الجهة', 'الهوية البصرية', 'بيانات الأدمن', 'منصات المشاركة', 'النطاق', 'مراجعة وتأكيد'],
+    wizard: {
+      orgName: '', siteDescription: '', hashtag: '', slug: '',
+      primaryColor: '#1e3a8a', secondaryColor: '#d97706', themeMode: 'dark',
+      adminUsername: '', enabledSharePlatforms: ['x', 'whatsapp', 'facebook'],
+      logoBase64: null, logoContentType: null
+    },
+
+    init() {
+      this.token = localStorage.getItem('factory_token');
+      if (this.token) { this.screen = 'dashboard'; this.loadTenants(); }
+    },
+
+    slugify(s) { return (s || '').toLowerCase().trim().replace(/[^a-z0-9\u0600-\u06FF\s-]/g, '').replace(/\s+/g, '-').slice(0, 40); },
+    togglePlatform(p) {
+      const i = this.wizard.enabledSharePlatforms.indexOf(p);
+      if (i === -1) this.wizard.enabledSharePlatforms.push(p); else this.wizard.enabledSharePlatforms.splice(i, 1);
+    },
+    onLogoSelected(evt) {
+      const file = evt.target.files[0];
+      if (!file) return;
+      this.wizard.logoContentType = file.type;
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.wizard.logoBase64 = reader.result.split(',')[1];
+        this.wizardLogoPreview = reader.result;
+      };
+      reader.readAsDataURL(file);
+    },
+    statusLabel(s) { return { provisioning: 'قيد الإنشاء', active: 'نشطة', suspended: 'معلّقة', failed: 'فشل', deleting: 'قيد الحذف', deleted: 'محذوفة' }[s] || s; },
+    jobStatusLabel(s) { return { pending: 'قيد الانتظار', running: 'قيد التنفيذ', succeeded: 'نجح', failed: 'فشل', rolled_back: 'تم التراجع' }[s] || s; },
+    actionTypeLabel(a) {
+      return {
+        login: 'تسجيل دخول', create_tenant: 'إنشاء جهة', suspend_tenant: 'تعليق جهة',
+        resume_tenant: 'استئناف جهة', delete_tenant: 'حذف جهة', reveal_admin_password: 'عرض كلمة مرور الأدمن',
+        reset_admin_password: 'إعادة تعيين كلمة مرور الأدمن', update_template: 'تحديث القالب',
+        bulk_update_template: 'تحديث جماعي للقالب', vault_bootstrap: 'ضبط مفاتيح الوصول',
+        update_site_settings: 'تعديل الهوية البصرية'
+      }[a] || a;
+    },
+    stepLabel(step) {
+      return {
+        create_render_database: 'إنشاء قاعدة بيانات Render', run_migrations: 'تشغيل الهجرة',
+        insert_site_settings: 'حفظ الهوية البصرية',
+        create_main_admin: 'إنشاء حساب الأدمن', create_vercel_project: 'إنشاء مشروع Vercel',
+        set_env_vars: 'ضبط متغيرات البيئة', deploy: 'النشر', add_domain: 'ربط النطاق',
+        health_check: 'الفحص الصحي', finalize: 'الإنهاء'
+      }[step] || step;
+    },
+
+    async api(path, opts = {}) {
+      const res = await fetch('/api/factory' + path, {
+        ...opts,
+        headers: { 'Content-Type': 'application/json', ...(this.token ? { Authorization: 'Bearer ' + this.token } : {}), ...(opts.headers || {}) }
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || ('HTTP ' + res.status));
+      return data;
+    },
+
+    async submitLogin() {
+      this.loading = true; this.errorMsg = '';
+      try {
+        const data = await this.api('/auth/login', { method: 'POST', body: JSON.stringify(this.loginForm) });
+        if (data.token) { this.finishLogin(data); return; }
+        this.preToken = data.preToken;
+        this.screen = data.totpEnrolled ? 'totp-verify' : 'totp-enroll';
+        if (!data.totpEnrolled) await this.startTotpEnroll();
+      } catch (e) { this.errorMsg = e.message; } finally { this.loading = false; }
+    },
+    async startTotpEnroll() {
+      const data = await this.api('/auth/totp/enroll', { method: 'POST', body: JSON.stringify({ preToken: this.preToken }) });
+      this.totpSecret = data.secret; this.otpauthUrl = data.otpauthUrl;
+    },
+    async submitTotpEnrollConfirm() {
+      this.loading = true; this.errorMsg = '';
+      try {
+        const data = await this.api('/auth/totp/enroll/confirm', { method: 'POST', body: JSON.stringify({ preToken: this.preToken, code: this.totpCode }) });
+        this.finishLogin(data);
+      } catch (e) { this.errorMsg = e.message; } finally { this.loading = false; }
+    },
+    async submitTotpVerify() {
+      this.loading = true; this.errorMsg = '';
+      try {
+        const data = await this.api('/auth/totp/verify', { method: 'POST', body: JSON.stringify({ preToken: this.preToken, code: this.totpCode }) });
+        this.finishLogin(data);
+      } catch (e) { this.errorMsg = e.message; } finally { this.loading = false; }
+    },
+    finishLogin(data) {
+      this.token = data.token; this.superAdminName = data.name;
+      localStorage.setItem('factory_token', this.token);
+      this.screen = 'dashboard';
+      this.loadTenants();
+    },
+    async logout() {
+      try { await this.api('/auth/logout', { method: 'POST' }); } catch (e) {}
+      localStorage.removeItem('factory_token');
+      this.token = null; this.screen = 'login';
+    },
+
+    async loadTenants() {
+      try { const d = await this.api('/tenants'); this.tenants = d.tenants || []; } catch (e) { this.errorMsg = e.message; }
+    },
+    async loadAuditLog() {
+      try { const d = await this.api('/audit-log'); this.auditLogs = d.logs || []; } catch (e) {}
+    },
+
+    async submitCreateTenant() {
+      this.loading = true; this.errorMsg = '';
+      try {
+        const payload = { ...this.wizard };
+        const data = await this.api('/tenants', { method: 'POST', body: JSON.stringify(payload) });
+        this.activeTab = 'tenants';
+        await this.loadTenants();
+        const tenant = this.tenants.find(t => t.id === data.tenantId);
+        this.openJobView(tenant, data.jobId);
+        this.wizardStep = 1;
+        this.wizardLogoPreview = null;
+        this.wizard = { orgName: '', siteDescription: '', hashtag: '', slug: '', primaryColor: '#1e3a8a', secondaryColor: '#d97706', themeMode: 'dark', adminUsername: '', enabledSharePlatforms: ['x', 'whatsapp', 'facebook'], logoBase64: null, logoContentType: null };
+      } catch (e) { this.errorMsg = e.message; } finally { this.loading = false; }
+    },
+
+    openJobView(tenant, jobId) {
+      this.viewingJobTenantName = tenant ? tenant.org_name : '';
+      this.activeTab = 'tenants';
+      if (this.jobPollInterval) clearInterval(this.jobPollInterval);
+      const poll = async () => {
+        try {
+          const jid = jobId || (this.viewingJob && this.viewingJob.id);
+          if (!jid) return;
+          const d = await this.api('/jobs/' + jid);
+          this.viewingJob = d.job;
+          if (['succeeded', 'failed', 'rolled_back'].includes(d.job.status)) {
+            clearInterval(this.jobPollInterval);
+            this.loadTenants();
+          }
+        } catch (e) { clearInterval(this.jobPollInterval); }
+      };
+      poll();
+      this.jobPollInterval = setInterval(poll, 3000);
+    },
+
+    async revealAdminPassword(tenantId) {
+      try {
+        const d = await this.api('/tenants/' + tenantId + '/admin-password');
+        this.revealedPassword = d.password;
+      } catch (e) { this.errorMsg = e.message; }
+    },
+    async suspendTenant(id) { if (!confirm('تعليق هذه الجهة؟')) return; await this.api('/tenants/' + id + '/suspend', { method: 'POST' }); this.loadTenants(); },
+    async resumeTenant(id) { await this.api('/tenants/' + id + '/resume', { method: 'POST' }); this.loadTenants(); },
+    async updateTemplate(id) { if (!confirm('إعادة نشر أحدث نسخة من القالب لهذه الجهة؟')) return; await this.api('/tenants/' + id + '/update-template', { method: 'POST' }); },
+    async confirmDeleteTenant(tenant) {
+      const typed = prompt('لا يمكن التراجع عن هذا الإجراء. اكتب معرّف الجهة "' + tenant.slug + '" للتأكيد:');
+      if (typed !== tenant.slug) return;
+      try { await this.api('/tenants/' + tenant.id + '/delete', { method: 'POST', body: JSON.stringify({ confirmSlug: typed }) }); this.loadTenants(); }
+      catch (e) { this.errorMsg = e.message; }
+    },
+
+    async openEditBranding(tenant) {
+      this.editingTenant = tenant;
+      this.brandingLoading = true;
+      this.brandingError = '';
+      this.brandingSaved = false;
+      this.brandingForm = null;
+      this.brandingLogoPreview = null;
+      try {
+        const d = await this.api('/tenants/' + tenant.id + '/site-settings');
+        const s = d.settings;
+        this.brandingForm = {
+          orgName: s.org_name || '',
+          siteDescription: s.site_description || '',
+          hashtag: s.hashtag || '',
+          primaryColor: s.primary_color || '#1e3a8a',
+          secondaryColor: s.secondary_color || '#d97706',
+          themeMode: s.theme_mode || 'dark',
+          enabledSharePlatforms: s.enabled_share_platforms || ['x', 'whatsapp', 'facebook'],
+          newLogoBase64: null,
+          newLogoContentType: null,
+          clearLogo: false
+        };
+        this.brandingLogoPreview = d.logoPreviewUrl || null;
+      } catch (e) {
+        this.brandingError = e.message;
+      } finally {
+        this.brandingLoading = false;
+      }
+    },
+    closeEditBranding() {
+      this.editingTenant = null;
+      this.brandingForm = null;
+      this.brandingLogoPreview = null;
+    },
+    onBrandingLogoSelected(evt) {
+      const file = evt.target.files[0];
+      if (!file) return;
+      this.brandingForm.newLogoContentType = file.type;
+      this.brandingForm.clearLogo = false;
+      const reader = new FileReader();
+      reader.onload = () => {
+        this.brandingForm.newLogoBase64 = reader.result.split(',')[1];
+        this.brandingLogoPreview = reader.result; // instant local preview, data: URL
+      };
+      reader.readAsDataURL(file);
+    },
+    toggleBrandingPlatform(p) {
+      const i = this.brandingForm.enabledSharePlatforms.indexOf(p);
+      if (i === -1) this.brandingForm.enabledSharePlatforms.push(p); else this.brandingForm.enabledSharePlatforms.splice(i, 1);
+    },
+    async saveBranding() {
+      this.brandingSaving = true;
+      this.brandingError = '';
+      this.brandingSaved = false;
+      try {
+        const payload = {
+          orgName: this.brandingForm.orgName,
+          siteDescription: this.brandingForm.siteDescription,
+          hashtag: this.brandingForm.hashtag,
+          primaryColor: this.brandingForm.primaryColor,
+          secondaryColor: this.brandingForm.secondaryColor,
+          themeMode: this.brandingForm.themeMode,
+          enabledSharePlatforms: this.brandingForm.enabledSharePlatforms
+        };
+        if (this.brandingForm.newLogoBase64) {
+          payload.logoBase64 = this.brandingForm.newLogoBase64;
+          payload.logoContentType = this.brandingForm.newLogoContentType;
+        } else if (this.brandingForm.clearLogo) {
+          payload.clearLogo = true;
+        }
+        await this.api('/tenants/' + this.editingTenant.id + '/site-settings', { method: 'POST', body: JSON.stringify(payload) });
+        this.brandingSaved = true;
+        this.brandingForm.newLogoBase64 = null;
+        this.brandingForm.clearLogo = false;
+        await this.loadTenants();
+      } catch (e) {
+        this.brandingError = e.message;
+      } finally {
+        this.brandingSaving = false;
+      }
+    }
+  };
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+# Render Blueprint for the Factory Control Plane.
+# Deploy via: Render Dashboard -> New -> Blueprint -> point at this repo/folder.
+#
+# ONE shared Postgres database for EVERYTHING: the factory's own
+# control-plane tables (public schema) AND every tenant's tables (each in
+# its own "tenant_<id>" schema, created automatically when you provision a
+# tenant through the wizard). See lib/tenantDb.js and the root README for
+# why this is schema-per-tenant rather than one database instance per tenant.
+#
+# After the first deploy, run migrations/001_factory_schema.sql against the
+# new database once (e.g. via `psql "$DATABASE_URL" -f migrations/001_factory_schema.sql`,
+# using the External Database URL from the Render dashboard), then follow
+# the rest of README.md's setup steps.
+
+databases:
+  - name: campaign-factory-db
+    plan: free
+    region: frankfurt
+    postgresMajorVersion: "17"
+
+services:
+  - type: web
+    name: campaign-site-factory
+    runtime: node
+    plan: free
+    region: frankfurt
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: campaign-factory-db
+          property: connectionString
+      # Everything below has no safe default — set these in the Render
+      # dashboard (Environment tab) after the first deploy, not here, so
+      # they never end up committed to this file.
+      - key: FACTORY_ENCRYPTION_KEY
+        sync: false
+      - key: FACTORY_BOOTSTRAP_SECRET
+        sync: false
+      - key: FACTORY_REQUIRE_2FA
+        value: "true"
+      - key: VERCEL_TOKEN
+        sync: false
+      - key: VERCEL_TEAM_ID
+        sync: false
+      - key: TENANT_GIT_REPO
+        sync: false
+      - key: TENANT_GIT_REPO_ID
+        sync: false
+      - key: TENANT_BASE_DOMAIN
+        sync: false

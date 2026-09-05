@@ -1,0 +1,17 @@
+{
+  "name": "campaign-management-system",
+  "version": "4.0.0",
+  "description": "Campaign Management System v4 - RDP Complete System with sub-admins, invite links, analytics, PDF reports, and enhanced security",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "deploy": "vercel --prod",
+    "test": "node lib/db.test.js && node lib/pg-supabase-shim.test.js"
+  },
+  "dependencies": {
+    "pg": "^8.23.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

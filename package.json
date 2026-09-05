@@ -1,0 +1,13 @@
+{
+  "name": "campaign-site-factory",
+  "version": "1.0.0",
+  "description": "نظام لإنشاء وإدارة مواقع حملات إعلامية متعددة",
+  "scripts": {
+    "test": "npm --prefix factory test",
+    "test:db": "node test-db.js",
+    "migrate": "node run-migration.js"
+  },
+  "dependencies": {
+    "pg": "^8.23.0"
+  }
+}

@@ -278,6 +278,38 @@ async function handleLogout(req, res) {
   return json(res, 200, { success: true });
 }
 
+/** Self-service password change: proves knowledge of the current password, then replaces it. Rate-limited like login. */
+async function handleChangePassword(req, res) {
+  if (req.method !== 'POST') return json(res, 405, { error: 'Method not allowed' });
+  const clientId = crypto.createHash('sha256').update(getIp(req)).digest('hex');
+  const rl = checkRateLimit(clientId);
+  if (!rl.allowed) return json(res, 429, { error: 'Too many attempts', retryAfter: rl.retryAfter });
+
+  try {
+    const { username, oldPassword, newPassword } = JSON.parse(await readBody(req) || '{}');
+    if (!username || !oldPassword || !newPassword) return json(res, 400, { error: 'username, oldPassword and newPassword are required' });
+    if (newPassword.length < 12) return json(res, 400, { error: 'newPassword must be at least 12 characters' });
+
+    const { data: admin, error } = await db.from('super_admins').select('*').eq('username', username).eq('is_active', true).single();
+    if (error || !admin) return json(res, 401, { error: 'Invalid credentials' });
+
+    const hashed = pw.hashPassword(oldPassword, admin.password_salt);
+    if (!pw.timingSafeCompare(hashed, admin.password_hash)) return json(res, 401, { error: 'Invalid credentials' });
+
+    const newSalt = pw.generateSalt();
+    const newHash = pw.hashPassword(newPassword, newSalt);
+    const { error: uErr } = await db.from('super_admins').update({ password_hash: newHash, password_salt: newSalt }).eq('id', admin.id);
+    if (uErr) return json(res, 500, { error: uErr.message });
+
+    // Invalidate all existing sessions so the old password cannot be reused anywhere.
+    await db.from('factory_sessions').update({ revoked_at: new Date().toISOString() }).eq('super_admin_id', admin.id);
+    await logActivity({ superAdminId: admin.id, superAdminName: admin.name, actionType: 'change_password', req });
+    return json(res, 200, { success: true, message: 'Password changed — all sessions revoked, please log in again.' });
+  } catch (e) {
+    return json(res, 500, { error: e.message });
+  }
+}
+
 // ---------------------------------------------------------------------------
 // VAULT BOOTSTRAP — set the Vercel/Render master tokens (auth required)
 // ---------------------------------------------------------------------------
@@ -674,6 +706,7 @@ module.exports = async (req, res) => {
     if (p === '/api/factory/auth/totp/enroll/confirm') return handleTotpEnrollConfirm(req, res);
     if (p === '/api/factory/auth/totp/verify') return handleTotpVerify(req, res);
     if (p === '/api/factory/auth/logout') return handleLogout(req, res);
+    if (p === '/api/factory/auth/change-password') return handleChangePassword(req, res);
     if (p === '/api/factory/vault/bootstrap') return handleVaultBootstrap(req, res);
     if (p === '/api/factory/tenants' && req.method === 'GET') return handleListTenants(req, res);
     if (p === '/api/factory/tenants' && req.method === 'POST') return handleCreateTenant(req, res);

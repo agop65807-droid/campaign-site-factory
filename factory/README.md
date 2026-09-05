@@ -33,6 +33,7 @@ render.yaml                          Render Blueprint — خدمة واحدة + 
 |---|---|
 | `POST /api/factory/bootstrap` | إنشاء أول مشرف عام (مرة واحدة فقط) |
 | `POST /api/factory/auth/login` → `/auth/totp/verify` | تسجيل الدخول + التحقق بخطوتين |
+| `POST /api/factory/auth/change-password` | تغيير كلمة المرور ذاتيا (username + oldPassword + newPassword ≥12 حرفا) — يُبطل كل الجلسات |
 | `GET`/`POST /api/factory/tenants` | قائمة الجهات / إنشاء جهة جديدة |
 | `GET /api/factory/jobs/:id` | متابعة تقدّم إنشاء جهة |
 | `POST /api/factory/tenants/:id/suspend`\|`resume`\|`delete` | إدارة دورة حياة الجهة |
